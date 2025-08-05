@@ -1,0 +1,81 @@
+body {
+	background-color: #80ffff;
+	font-family: serif;
+	margin: 0;
+	padding : 0;
+	box-sizing : border-box ;
+}
+
+.login-container {
+	width: 400px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	height: 78vh;
+	margin: 0 auto;
+	justify-content: center
+}
+
+.nav-login {
+	margin  : 0 20px;
+	margin-top : 5px;
+}
+
+.title {
+	text-align: center;
+	color: #1976d2;
+	font-size: 40px;
+	margin-left: 80px;
+	margin-bottom: 5px;
+}
+
+.error-message {
+	color: red;
+	text-align: center;
+	font-size: 16px;
+	margin-left: 80px;
+	margin-top: 0;
+	margin-bottom: 25px;
+}
+
+.input-group {
+	display: flex;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.input-group label {
+	width: 90px;
+}
+
+.input-group input {
+	width: 200px;
+	padding-bottom: 2px;
+	padding-top: 4px;
+	border: 1px solid #000;
+	border-left: 2px solid #000;
+	border-top: 2px solid #000;
+	outline: none;
+	border-left: 2px solid #000;
+}
+
+#txtpassword {
+	font-size: 13px;
+}
+
+.button-group {
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	margin-top: 30px;
+	margin-left: 25px;
+}
+
+.button-group input {
+	cursor: pointer;
+	width: 80px;
+	padding: 4px 20px;
+	border: 1px solid #000;
+	border-right: 2px solid #000;
+	border-bottom: 2px solid #000
+}

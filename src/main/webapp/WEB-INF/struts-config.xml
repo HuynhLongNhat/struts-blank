@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts-config PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN"
+    "struts-config_1_2.dtd">
+
+<struts-config>
+
+	<!-- Form beans -->
+	<form-beans>
+		<form-bean name="T001Form" type="form.T001Form" />
+	</form-beans>
+	<!-- Global forwards -->
+	<global-forwards>
+	<!-- 	<forward name="T002" path="/WEB-INF/jsp/T002.jsp" /> -->
+	</global-forwards>
+
+	<!-- Action mappings -->
+	<action-mappings>
+		<!-- Action cho T001 -->
+		<action path="/T001" 
+		        type="action.T001Action" 
+		        name="T001Form"
+			    scope="request" 
+			    validate="true" 
+			    input="/WEB-INF/jsp/T001.jsp">
+			<forward name="T002" path="/T002.do" redirect="true" />
+			<forward name="T001" path="/WEB-INF/jsp/T001.jsp" />
+		</action>
+		<action path="/T002"
+                type="action.T002Action"
+                validate="false">
+           <forward name="display" path="/WEB-INF/jsp/T002.jsp"/>
+       </action>
+		
+	</action-mappings>
+
+
+	<!-- Message resources -->
+	<message-resources parameter="MessageResource" />
+</struts-config>

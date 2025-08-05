@@ -1,0 +1,133 @@
+body {
+	background-color: #80ffff;
+	font-family: serif;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+.container {
+	margin: 0 20px;
+}
+
+.welcome {
+	display: flex;
+	margin-top: 30px;
+	margin-bottom: 20px;
+	justify-content: space-between;
+}
+
+.welcome a {
+	color: #000;
+	margin-left: 15px;
+}
+
+.blue-bar {
+	background: blue;
+	height: 20px;
+	margin-bottom: 40px;
+}
+
+.search-form {
+	background: #ffe600;
+	padding: 25px 10px;
+	margin-bottom: 15px;
+	display: flex;
+	justify-content: space-between;
+}
+
+.search-form label {
+	margin-right: 15px;
+}
+
+.btn-pagination {
+	display: flex;
+	justify-content: space-between;
+	margin: 20px 0;
+}
+
+.btn-pagination  button {
+	padding: 3px 10px;
+	margin: 0;
+}
+
+.customer-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 10px;
+	border: 2px solid green;
+}
+
+.customer-table th, .customer-table td {
+	text-align: left;
+}
+
+.customer-table th {
+	background: #008000;
+	font-weight: 400;
+}
+
+.customer-table .select {
+	width: 20px;
+}
+
+.customer-table .customer-id {
+	width: 110px;
+}
+
+.customer-table .customer-name {
+	width: 260px;
+}
+
+.customer-table .sex {
+	width: 80px;
+}
+
+.customer-table .birthday {
+	width: 70px;
+}
+
+.customer-table .address {
+	width: 260px;
+}
+
+.customer-table .id-data {
+	text-align: left;
+	text-decoration: underline;
+}
+
+.customer-table tbody tr:nth-child(odd) {
+	background-color: #ffffff;
+}
+
+.customer-table tbody tr:nth-child(even) {
+	background-color: #e6f2ff;
+}
+
+.pagination {
+	text-align: center;
+	margin: 10px 0;
+}
+
+.actions {
+	text-align: left;
+	margin-top: 20px;
+	margin-bottom: 15px;
+}
+
+.actions .btn-add {
+	width: 220px;
+	margin-right: 30px;
+	padding: 4px 0;
+	border: 1px solid #000;
+	border-bottom: 2px solid #000;
+	border-right: 2px solid #000;
+}
+
+.actions .btn-delete {
+	width: 90px;
+	padding: 4px 0;
+	border: 1px solid #000;
+	border-bottom: 2px solid #000;
+	border-right: 2px solid #000;
+}
