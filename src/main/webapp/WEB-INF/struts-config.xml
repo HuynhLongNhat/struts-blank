@@ -5,36 +5,96 @@
 
 <struts-config>
 
-	<!-- Form beans -->
-	<form-beans>
-		<form-bean name="T001Form" type="form.T001Form" />
-	</form-beans>
-	<!-- Global forwards -->
-	<global-forwards>
-	<!-- 	<forward name="T002" path="/WEB-INF/jsp/T002.jsp" /> -->
-	</global-forwards>
+    <!-- =========================================
+         FORM BEANS
+         Define the ActionForm classes used to
+         capture and validate input from JSP forms.
+         ========================================= -->
+    <form-beans>
+        <!-- Login form for T001.jsp -->
+        <form-bean name="T001Form" type="form.T001Form" />
+        <!-- Search/Delete form for T002.jsp -->
+        <form-bean name="T002Form" type="form.T002Form" />
+    </form-beans>
 
-	<!-- Action mappings -->
-	<action-mappings>
-		<!-- Action cho T001 -->
-		<action path="/T001" 
-		        type="action.T001Action" 
-		        name="T001Form"
-			    scope="request" 
-			    validate="true" 
-			    input="/WEB-INF/jsp/T001.jsp">
-			<forward name="T002" path="/T002.do" redirect="true" />
-			<forward name="T001" path="/WEB-INF/jsp/T001.jsp" />
-		</action>
-		<action path="/T002"
-                type="action.T002Action"
+    <!-- =========================================
+         GLOBAL FORWARDS
+         Define commonly used JSP pages to be
+         forwarded globally from any Action.
+         ========================================= -->
+    <global-forwards>
+        <!-- Forward to Login page -->
+        <forward name="T001" path="/WEB-INF/jsp/T001.jsp"/>
+        <!-- Forward to T002 page -->
+        <forward name="T002" path="/WEB-INF/jsp/T002.jsp"/>
+    </global-forwards>
+
+    <!-- =========================================
+         ACTION MAPPINGS
+         Define how incoming requests (by path)
+         are handled by corresponding Action classes.
+         ========================================= -->
+    <action-mappings>
+        
+        <!-- Show login form -->
+        <action path="/T001"
+                type="action.T001Action"
+                parameter="showLoginForm"
                 validate="false">
-           <forward name="display" path="/WEB-INF/jsp/T002.jsp"/>
-       </action>
-		
-	</action-mappings>
+        </action>
 
+        <!-- Process user login -->
+        <action path="/T001Login"
+                type="action.T001Action"
+                name="T001Form"
+                scope="request"
+                validate="true"
+                input="/WEB-INF/jsp/T001.jsp"
+                parameter="getUserLogin">
+        </action>
+        
+        <!-- Initialize T002 page -->
+        <action path="/T002"
+                type="action.T002Action"
+                name="T002Form"
+                scope="request"
+                parameter="init"
+                validate="false">
+        </action>
 
-	<!-- Message resources -->
-	<message-resources parameter="MessageResource" />
+        <!-- Perform search on T002 page -->
+      <action path="/T002Search"
+        type="action.T002Action"
+        name="T002Form"
+        scope="request"
+        parameter="search"
+        validate="true"
+        input="/WEB-INF/jsp/T002.jsp">
+      </action>
+
+        <!-- Delete record on T002 page -->
+        <action path="/T002Delete"
+                type="action.T002Action"
+                name="T002Form"
+                scope="request"
+                parameter="delete"
+                validate="false">
+        </action>
+
+        <!-- Logout and redirect to login -->
+        <action path="/T002Logout"
+                type="action.T002Action"
+                parameter="logout"
+                validate="false">
+        </action>
+
+    </action-mappings>
+
+    <!-- =========================================
+         MESSAGE RESOURCES
+         Define resource bundle for internationalized
+         messages (labels, errors, etc.).
+         ========================================= -->
+    <message-resources parameter="MessageResource" />
+
 </struts-config>

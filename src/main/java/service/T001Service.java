@@ -59,14 +59,8 @@ public class T001Service {
 	 *         authentication fails
 	 * @throws SQLException if a database access error occurs
 	 */
-	public T001Dto getUserLogin(T001Form inputForm) throws SQLException {
-	    // Convert Form to DTO
-	    T001Dto inputDto = new T001Dto();
-	    inputDto.setUserId(inputForm.getUserId());
-	    inputDto.setPassword(inputForm.getPassword());
-
-	    // Call DAO
-	    return t001Dao.getUserLogin(inputDto);
+	public T001Dto getUserLogin(T001Dto t001dto) throws SQLException {
+	    return t001Dao.getUserLogin(t001dto);
 	}
 
 }

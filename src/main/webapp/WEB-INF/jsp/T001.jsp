@@ -6,7 +6,7 @@
 <head>
 <title><bean:message key="label.login" /></title>
 <link rel="stylesheet" type="text/css"
-	href="${pageContext.request.contextPath}/WebContent/css/T001.css?ts=<%=System.currentTimeMillis()%>">
+	href="<%=request.getContextPath()%>/WebContent/css/T001.css?ts=<%=System.currentTimeMillis()%>">
 </head>
 <body>
 
@@ -24,7 +24,7 @@
 			<html:errors  />
 		</label>
 		<!-- Form Struts -->
-		<html:form action="/T001" method="post">
+		<html:form action="/T001Login" method="post">
 			<div class="input-group">
 				<label for="txtuserID"> <bean:message key="label.userId" />
 				</label>
@@ -49,7 +49,7 @@
 		</html:form>
 	</div>
 	<%@ include file="Footer.jsp"%>
-	<script src="${pageContext.request.contextPath}/WebContent/js/script.js"></script>
+	<script src="<%=request.getContextPath()%>/WebContent/js/script.js"></script>
 	<script>
 	function clearFormFields() {
 	    document.getElementById('txtuserID').value = '';

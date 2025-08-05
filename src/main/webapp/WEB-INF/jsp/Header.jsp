@@ -1,18 +1,11 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Login Training</title>
+<%@ page contentType="text/html;charset=UTF-8" language="java"%>
+<%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%>
 <link rel="stylesheet" type="text/css"
 	href="${pageContext.request.contextPath}/WebContent/css/Header.css">
-</head>
-<body>
- <header class="header">
- <div class="header-content">
-  <h1>Training</h1>
- </div>
- 
- </header>
-</body>
-</html>
+<header class="header">
+	<div class="header-content">
+		<h1>
+			<bean:message key="title.training" />
+		</h1>
+	</div>
+</header>
