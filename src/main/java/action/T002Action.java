@@ -33,7 +33,7 @@ public class T002Action extends MappingDispatchAction {
     private final T002Service t002Service = T002Service.getInstance();
 
     /** Number of records per page for pagination */
-    private static final int PAGE_SIZE = 15;
+    private static final int PAGE_SIZE = 5;
 
     /**
      * Initializes the T002 screen by displaying the customer list.
@@ -133,12 +133,15 @@ public class T002Action extends MappingDispatchAction {
         }
 
         // Handle pagination
-        int currentPage;
+        int currentPage = 1;
         try {
-            currentPage = Math.max(Integer.parseInt(request.getParameter("page")), 1);
+            currentPage = Integer.parseInt(request.getParameter("currentPage"));
         } catch (NumberFormatException e) {
-            currentPage = 1;
+            currentPage = 1; 
         }
+        t002Form.setCurrentPage(currentPage);
+
+
         int offset = (currentPage - 1) * PAGE_SIZE;
 
         // Fetch customers from service and prepare data for JSP
@@ -153,21 +156,21 @@ public class T002Action extends MappingDispatchAction {
             }
 
             request.setAttribute("customers", customers);
-            request.setAttribute("totalRecords", totalRecords);
-            request.setAttribute("currentPage", currentPage);
-            request.setAttribute("totalPages", totalPages);
-            request.setAttribute("prevPage", (currentPage > 1) ? currentPage - 1 : 1);
-            request.setAttribute("nextPage", (currentPage < totalPages) ? currentPage + 1 : totalPages);
+            t002Form.setCurrentPage(currentPage);
+            t002Form.setPrevPage((currentPage > 1) ? currentPage - 1 : 1);
+            t002Form.setNextPage((currentPage < totalPages) ? currentPage + 1 : totalPages);
+            t002Form.setTotalPages(totalPages);
 
             request.setAttribute("disableFirst", currentPage == 1);
             request.setAttribute("disablePrevious", currentPage == 1);
             request.setAttribute("disableNext", currentPage == totalPages || totalPages == 0);
             request.setAttribute("disableLast", currentPage == totalPages || totalPages == 0);
 
-            request.setAttribute("searchCustomerName", sco.getCustomerName());
-            request.setAttribute("searchSex", sco.getSex());
-            request.setAttribute("searchBirthdayFrom", sco.getBirthdayFrom());
-            request.setAttribute("searchBirthdayTo", sco.getBirthdayTo());
+            t002Form.setCustomerName(sco.getCustomerName());
+            t002Form.setSex(sco.getSex());
+            t002Form.setBirthdayFrom(sco.getBirthdayFrom());
+            t002Form.setBirthdayTo(sco.getBirthdayTo());
+
 
             return mapping.findForward("T002");
         } catch (Exception e) {

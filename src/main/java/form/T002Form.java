@@ -14,185 +14,207 @@ import org.apache.struts.action.ActionMessage;
 import utils.Helper;
 
 /**
- * Represents the customer search form in a Struts 1.x application.
+ * Form bean for the T002 screen (Customer Search).
  * <p>
- * This form captures search criteria such as customer name, gender,
- * birthday range, and selected customer IDs from a JSP page.
+ * This class captures user input for customer search criteria, selected
+ * customer IDs, and pagination data for listing results.
  * </p>
- * 
- * <p><b>Fields include:</b></p>
+ *
+ * <p>
+ * <b>Main responsibilities:</b>
+ * </p>
  * <ul>
- *   <li>{@code customerName} - Name of the customer for search filtering.</li>
- *   <li>{@code sex} - Gender of the customer ("M", "F", etc.).</li>
- *   <li>{@code birthdayFrom} - Start date of the birthday range (format: yyyy/MM/dd).</li>
- *   <li>{@code birthdayTo} - End date of the birthday range (format: yyyy/MM/dd).</li>
- *   <li>{@code customerIds} - Array of selected customer IDs (e.g., for bulk actions).</li>
+ * <li>Bind search criteria fields from the JSP (name, gender, birthday
+ * range).</li>
+ * <li>Capture selected customer IDs for bulk actions (e.g., delete).</li>
+ * <li>Maintain pagination state (current page, total pages, etc.) for
+ * consistent navigation.</li>
+ * <li>Provide input validation logic for date formats and birthday ranges.</li>
  * </ul>
- * 
- * <p><b>Validation rules:</b></p>
+ *
+ * <p>
+ * <b>Pagination fields:</b>
+ * </p>
  * <ul>
- *   <li>Birthday fields must follow the {@code yyyy/MM/dd} format.</li>
- *   <li>If both birthday range fields are provided, {@code birthdayTo} cannot be earlier than {@code birthdayFrom}.</li>
+ * <li>{@code currentPage} - The currently displayed page number.</li>
+ * <li>{@code prevPage} - The previous page number for navigation.</li>
+ * <li>{@code nextPage} - The next page number for navigation.</li>
+ * <li>{@code totalPages} - The total number of pages calculated from search
+ * results.</li>
  * </ul>
- * 
+ *
  * @author YourName
- * @version 1.0
+ * @version 1.1
  * @since 2025-07-21
  */
 public class T002Form extends ActionForm {
 
-    /** Serial version UID for serialization. */
-    private static final long serialVersionUID = 1L;
+	/** Serial version UID for serialization. */
+	private static final long serialVersionUID = 1L;
 
-    /** Name of the customer used for search filtering. */
-    private String customerName;
+	// =========================
+	// Search criteria fields
+	// =========================
 
-    /** Gender of the customer ("M", "F", etc.). */
-    private String sex;
+	/** Name of the customer used for search filtering. */
+	private String customerName;
 
-    /** Start date of the birthday range (format: yyyy/MM/dd). */
-    private String birthdayFrom;
+	/** Gender of the customer ("0" for male, "1" for female, empty for all). */
+	private String sex;
 
-    /** End date of the birthday range (format: yyyy/MM/dd). */
-    private String birthdayTo;
+	/** Start date of the birthday range (format: yyyy/MM/dd). */
+	private String birthdayFrom;
 
-    /** Array of selected customer IDs (e.g., for bulk actions). */
-    private String[] customerIds;
+	/** End date of the birthday range (format: yyyy/MM/dd). */
+	private String birthdayTo;
 
-    /**
-     * Gets the customer name.
-     *
-     * @return the customer name
-     */
-    public String getCustomerName() {
-        return customerName;
-    }
+	// =========================
+	// Selected customers (bulk actions)
+	// =========================
 
-    /**
-     * Sets the customer name.
-     *
-     * @param customerName the customer name to set
-     */
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
+	/** Array of selected customer IDs (e.g., for bulk delete). */
+	private String[] customerIds;
 
-    /**
-     * Gets the gender of the customer.
-     *
-     * @return the gender of the customer
-     */
-    public String getSex() {
-        return sex;
-    }
+	// =========================
+	// Pagination fields
+	// =========================
 
-    /**
-     * Sets the gender of the customer.
-     *
-     * @param sex the gender to set
-     */
-    public void setSex(String sex) {
-        this.sex = sex;
-    }
+	/** The currently displayed page number. */
+	private int currentPage = 1;
 
-    /**
-     * Gets the starting date of the birthday range.
-     *
-     * @return the starting birthday date in yyyy/MM/dd format
-     */
-    public String getBirthdayFrom() {
-        return birthdayFrom;
-    }
+	/** The previous page number for navigation. */
+	private int prevPage = 1;
 
-    /**
-     * Sets the starting date of the birthday range.
-     *
-     * @param birthdayFrom the starting birthday date to set
-     */
-    public void setBirthdayFrom(String birthdayFrom) {
-        this.birthdayFrom = birthdayFrom;
-    }
+	/** The next page number for navigation. */
+	private int nextPage = 1;
 
-    /**
-     * Gets the ending date of the birthday range.
-     *
-     * @return the ending birthday date in yyyy/MM/dd format
-     */
-    public String getBirthdayTo() {
-        return birthdayTo;
-    }
+	/** The total number of pages. */
+	private int totalPages = 1;
 
-    /**
-     * Sets the ending date of the birthday range.
-     *
-     * @param birthdayTo the ending birthday date to set
-     */
-    public void setBirthdayTo(String birthdayTo) {
-        this.birthdayTo = birthdayTo;
-    }
+	
+	// =========================
+	// Getters and Setters
+	// =========================
 
-    /**
-     * Gets the selected customer IDs.
-     *
-     * @return an array of selected customer IDs
-     */
-    public String[] getCustomerIds() {
-        return customerIds;
-    }
+	public String getCustomerName() {
+		return customerName;
+	}
 
-    /**
-     * Sets the selected customer IDs.
-     *
-     * @param customerIds an array of selected customer IDs to set
-     */
-    public void setCustomerIds(String[] customerIds) {
-        this.customerIds = customerIds;
-    }
+	public void setCustomerName(String customerName) {
+		this.customerName = customerName;
+	}
 
-    /**
-     * Validates the input fields when the form is submitted.
-     * <p>
-     * This validation checks:
-     * <ul>
-     *   <li>Birthday fields follow the {@code yyyy/MM/dd} format.</li>
-     *   <li>If both birthday range fields are present, {@code birthdayTo} is not earlier than {@code birthdayFrom}.</li>
-     * </ul>
-     * </p>
-     *
-     * @param mapping the action mapping used to select this instance
-     * @param request the HTTP request being processed
-     * @return an {@link ActionErrors} object containing any validation errors;
-     *         returns an empty {@code ActionErrors} object if validation passes
-     */
-    @Override
-    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
+	public String getSex() {
+		return sex;
+	}
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+	public void setSex(String sex) {
+		this.sex = sex;
+	}
 
-        try {
-            LocalDate from = null;
-            LocalDate to = null;
+	public String getBirthdayFrom() {
+		return birthdayFrom;
+	}
 
-            if (!Helper.isEmpty(birthdayFrom)) {
-                from = LocalDate.parse(birthdayFrom.trim(), formatter);
-            }
+	public void setBirthdayFrom(String birthdayFrom) {
+		this.birthdayFrom = birthdayFrom;
+	}
 
-            if (!Helper.isEmpty(birthdayTo)) {
-                to = LocalDate.parse(birthdayTo.trim(), formatter);
-            }
+	public String getBirthdayTo() {
+		return birthdayTo;
+	}
 
-            if (from != null && to != null && to.isBefore(from)) {
-                errors.add("birthdayRange", new ActionMessage("error.birthday.range"));
-            }
-        } catch (DateTimeParseException e) {
-            if (e.getParsedString().equals(birthdayFrom)) {
-                errors.add("birthdayFrom", new ActionMessage("error.birthdayFrom.format"));
-            } else {
-                errors.add("birthdayTo", new ActionMessage("error.birthdayTo.format"));
-            }
-        }
+	public void setBirthdayTo(String birthdayTo) {
+		this.birthdayTo = birthdayTo;
+	}
 
-        return errors;
-    }
+	public String[] getCustomerIds() {
+		return customerIds;
+	}
+
+	public void setCustomerIds(String[] customerIds) {
+		this.customerIds = customerIds;
+	}
+
+	public int getCurrentPage() {
+		return currentPage;
+	}
+
+	public void setCurrentPage(int currentPage) {
+		this.currentPage = currentPage;
+	}
+
+	public int getPrevPage() {
+		return prevPage;
+	}
+
+	public void setPrevPage(int prevPage) {
+		this.prevPage = prevPage;
+	}
+
+	public int getNextPage() {
+		return nextPage;
+	}
+
+	public void setNextPage(int nextPage) {
+		this.nextPage = nextPage;
+	}
+
+	public int getTotalPages() {
+		return totalPages;
+	}
+
+	public void setTotalPages(int totalPages) {
+		this.totalPages = totalPages;
+	}
+	// =========================
+	// Validation logic
+	// =========================
+
+	/**
+	 * Validates user input for the T002 screen.
+	 * <p>
+	 * Ensures that:
+	 * <ul>
+	 * <li>Birthday fields follow the yyyy/MM/dd format (if provided).</li>
+	 * <li>If both birthdayFrom and birthdayTo are provided, birthdayTo is not
+	 * earlier than birthdayFrom.</li>
+	 * </ul>
+	 * </p>
+	 *
+	 * @param mapping The action mapping used to select this instance.
+	 * @param request The HTTP request being processed.
+	 * @return An ActionErrors object containing any validation errors; empty if
+	 *         validation passes.
+	 */
+	@Override
+	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
+		ActionErrors errors = new ActionErrors();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+
+		try {
+			LocalDate from = null;
+			LocalDate to = null;
+
+			if (!Helper.isEmpty(birthdayFrom)) {
+				from = LocalDate.parse(birthdayFrom.trim(), formatter);
+			}
+
+			if (!Helper.isEmpty(birthdayTo)) {
+				to = LocalDate.parse(birthdayTo.trim(), formatter);
+			}
+
+			if (from != null && to != null && to.isBefore(from)) {
+				errors.add("birthdayRange", new ActionMessage("error.birthday.range"));
+			}
+		} catch (DateTimeParseException e) {
+			if (e.getParsedString().equals(birthdayFrom)) {
+				errors.add("birthdayFrom", new ActionMessage("error.birthdayFrom.format"));
+			} else {
+				errors.add("birthdayTo", new ActionMessage("error.birthdayTo.format"));
+			}
+		}
+
+		return errors;
+	}
 }
