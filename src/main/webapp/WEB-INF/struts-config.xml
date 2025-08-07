@@ -63,14 +63,14 @@
         </action>
 
         <!-- Perform search on T002 page -->
-      <action path="/T002Search"
-        type="action.T002Action"
-        name="T002Form"
-        scope="request"
-        parameter="search"
-        validate="true"
-        input="/WEB-INF/jsp/T002.jsp">
-      </action>
+         <action path="/T002Search"
+                 type="action.T002Action"
+                 name="T002Form"
+                 scope="request"
+                 parameter="search"
+                 validate="false"
+                 input="/WEB-INF/jsp/T002.jsp">
+        </action>
 
         <!-- Delete record on T002 page -->
         <action path="/T002Delete"

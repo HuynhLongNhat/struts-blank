@@ -24,9 +24,12 @@
 
 		<!-- Welcome -->
 		<div class="welcome">
-			<span> <bean:message key="label.welcome" /> <bean:write
-					name="user" property="userName" /> <bean:write name='T002Form'
-					property='prevPage' />
+			<span> <bean:message key="label.welcome" /> <logic:present
+					name="user">
+					<bean:write name="user" property="userName" />
+				</logic:present>
+
+
 			</span>
 			<html:link action="/T002Logout">
 				<bean:message key="label.logout" />
@@ -36,7 +39,7 @@
 		<div class="blue-bar"></div>
 
 		<!-- Error Messages -->
-		<div id="errorMessages">
+		<div id="errorMessages" style="display: none">
 			<html:errors />
 		</div>
 
@@ -44,11 +47,11 @@
 		<html:form action="/T002Search" styleClass="search-form" method="post">
 			<html:hidden property="actionType" value="search" />
 			<label> <bean:message key="label.customerName" /> <html:text
-					property="customerName" />
+					property="customerName" styleId="txtCustomerName" />
 			</label>
 
 			<label> <bean:message key="label.sex" /> <html:select
-					property="sex">
+					property="sex" styleId="cboSex">
 					<html:option value=""></html:option>
 					<html:option value="0">
 						<bean:message key="label.male" />
@@ -60,10 +63,11 @@
 			</label>
 
 			<label> <bean:message key="label.birthday" /> <html:text
-					property="birthdayFrom" /> - <html:text property="birthdayTo" />
+					property="birthdayFrom" styleId="txtBirthdayFrom" /> - <html:text
+					property="birthdayTo" styleId="txtBirthdayTo" />
 			</label>
 
-			<html:submit>
+			<html:submit styleId="btnSearch">
 				<bean:message key="label.search" />
 			</html:submit>
 		</html:form>
@@ -71,42 +75,56 @@
 		<!-- Pagination -->
 		<div class="btn-pagination">
 			<div class="previous">
+				<logic:equal name="disableFirst" value="true">
+					<button id="btnFirst" disabled>&lt;&lt;</button>
+				</logic:equal>
+				<logic:notEqual name="disableFirst" value="true">
+					<html:form action="/T002" method="post" style="display:inline;">
+						<input type="hidden" name="currentPage" value="1" />
+						<html:submit styleId="btnFirst">&lt;&lt;</html:submit>
+					</html:form>
+				</logic:notEqual>
 
+				<logic:equal name="disablePrevious" value="true">
+					<button id="btnPrevious" disabled>&lt;</button>
+				</logic:equal>
+				<logic:notEqual name="disablePrevious" value="true">
+					<html:form action="/T002" method="post" style="display:inline;">
+						<input type="hidden" name="currentPage"
+							value="<bean:write name='T002Form' property='prevPage'/>" />
+						<html:submit styleId="btnPrevious">&lt;</html:submit>
+					</html:form>
+				</logic:notEqual>
 
-				<!-- First Page -->
-				<html:form action="/T002" method="post" style="display:inline;">
-					<input type="hidden" name="currentPage" value="1" />
-					<html:submit>&lt;&lt;</html:submit>
-				</html:form>
-
-				<!-- Previous Page -->
-				<html:form action="/T002" method="post" style="display:inline;">
-					<input type="hidden" name="currentPage"
-						value="<bean:write name='T002Form' property='prevPage'/>" />
-					<html:submit>&lt;</html:submit>
-				</html:form>
 				<span><bean:message key="label.previous" /></span>
 			</div>
+
 			<div class="next">
-				<!-- Next Page -->
 				<span><bean:message key="label.next" /></span>
-				<html:form action="/T002" method="post" style="display:inline;">
-					<input type="hidden" name="currentPage"
-						value="<bean:write name='T002Form' property='nextPage'/>" />
-					<html:submit>&gt;</html:submit>
-				</html:form>
 
-				<!-- Last Page -->
-				<html:form action="/T002" method="post" style="display:inline;">
-					<input type="hidden" name="currentPage"
-						value="<bean:write name='T002Form' property='totalPages'/>" />
-					<html:submit>&gt;&gt;</html:submit>
-				</html:form>
+				<logic:equal name="disableNext" value="true">
+					<button id="btnNext" disabled>&gt;</button>
+				</logic:equal>
+				<logic:notEqual name="disableNext" value="true">
+					<html:form action="/T002" method="post" style="display:inline;">
+						<input type="hidden" name="currentPage"
+							value="<bean:write name='T002Form' property='nextPage'/>" />
+						<html:submit styleId="btnNext">&gt;</html:submit>
+					</html:form>
+				</logic:notEqual>
+
+				<logic:equal name="disableLast" value="true">
+					<button id="btnLast" disabled>&gt;&gt;</button>
+				</logic:equal>
+				<logic:notEqual name="disableLast" value="true">
+					<html:form action="/T002" method="post" style="display:inline;">
+						<input type="hidden" name="currentPage"
+							value="<bean:write name='T002Form' property='totalPages'/>" />
+						<html:submit styleId="btnLast">&gt;&gt;</html:submit>
+					</html:form>
+				</logic:notEqual>
 			</div>
-
-
 		</div>
-
 
 		<!-- Customer List -->
 		<html:form action="/T002Delete" method="post">
@@ -141,26 +159,22 @@
 							</tr>
 						</logic:iterate>
 					</logic:notEmpty>
-					<logic:empty name="customers">
-						<tr>
-							<td colspan="6" style="text-align: center;"><bean:message
-									key="label.noCustomer" /></td>
-						</tr>
-					</logic:empty>
 				</tbody>
 			</table>
 
 			<div class="actions">
-				<button type="button" class="btn-add" onclick="redirectToEditPage()">
+				<button type="button" class="btn-add" id="btnAddnew"
+					onclick="redirectToEditPage()">
 					<bean:message key="label.addNew" />
 				</button>
 				<logic:notEmpty name="customers">
-					<html:submit property="btnDelete" styleClass="btn-delete">
+					<html:submit property="btnDelete" styleClass="btn-delete"
+						styleId="btnDelete">
 						<bean:message key="label.delete" />
 					</html:submit>
 				</logic:notEmpty>
 				<logic:empty name="customers">
-					<button type="button" class="btn-delete" disabled>
+					<button type="button" class="btn-delete" id="btnDelete" disabled>
 						<bean:message key="label.delete" />
 					</button>
 				</logic:empty>
@@ -173,31 +187,31 @@
 	<script
 		src="<%=request.getContextPath()%>/WebContent/js/script.js?<%=System.currentTimeMillis()%>"></script>
 	<script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var errorElement = document.getElementById("errorMessages");
-            var errors = errorElement ? errorElement.textContent.trim() : "";
-            if (errors) {
-                alert(errors);
-            }
-        });
+	document.addEventListener("DOMContentLoaded", function () {
+		var errorElement = document.getElementById("errorMessages");
+		var errors = errorElement ? errorElement.textContent.trim() : "";
+		if (errors) {
+			alert(errors);
+		}
+	});
 
-        function toggleAll(source) {
-            const checkboxes = document.querySelectorAll('input[name="customerIds"]');
-            checkboxes.forEach(chk => chk.checked = source.checked);
-        }
+	function toggleAll(source) {
+		const checkboxes = document.querySelectorAll('input[name="customerIds"]');
+		checkboxes.forEach(chk => chk.checked = source.checked);
+	}
 
-        function redirectToEditPage() {
-            window.location.href = 'T003';
-        }
+	function redirectToEditPage() {
+		window.location.href = 'T003';
+	}
 
-        document.addEventListener("DOMContentLoaded", function() {
-            const checkAll = document.getElementById('chkAll');
-            if (checkAll) {
-                checkAll.addEventListener('change', function() {
-                    toggleAll(this);
-                });
-            }
-        });
-    </script>
+	document.addEventListener("DOMContentLoaded", function () {
+		const checkAll = document.getElementById('chkAll');
+		if (checkAll) {
+			checkAll.addEventListener('change', function () {
+				toggleAll(this);
+			});
+		}
+	});
+</script>
 </body>
 </html>

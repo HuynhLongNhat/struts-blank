@@ -91,7 +91,6 @@ public class T002Form extends ActionForm {
 	/** The total number of pages. */
 	private int totalPages = 1;
 
-	
 	// =========================
 	// Getters and Setters
 	// =========================
@@ -191,7 +190,6 @@ public class T002Form extends ActionForm {
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-
 		try {
 			LocalDate from = null;
 			LocalDate to = null;
@@ -214,7 +212,6 @@ public class T002Form extends ActionForm {
 				errors.add("birthdayTo", new ActionMessage("error.birthdayTo.format"));
 			}
 		}
-
 		return errors;
 	}
 }
