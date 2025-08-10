@@ -10,12 +10,14 @@
          Define the ActionForm classes used to
          capture and validate input from JSP forms.
          ========================================= -->
-    <form-beans>
-        <!-- Login form for T001.jsp -->
-        <form-bean name="T001Form" type="form.T001Form" />
-        <!-- Search/Delete form for T002.jsp -->
-        <form-bean name="T002Form" type="form.T002Form" />
-    </form-beans>
+	<form-beans>
+		<!-- Login form for T001.jsp -->
+		<form-bean name="T001Form" type="form.T001Form" />
+		<!-- Search/Delete form for T002.jsp -->
+		<form-bean name="T002Form" type="form.T002Form" />
+		<!--Add/Edit customer form for T003.jsp -->
+		<form-bean name="T003Form" type="form.T003Form" />
+	</form-beans>
 
     <!-- =========================================
          GLOBAL FORWARDS
@@ -27,6 +29,9 @@
         <forward name="T001" path="/WEB-INF/jsp/T001.jsp"/>
         <!-- Forward to T002 page -->
         <forward name="T002" path="/WEB-INF/jsp/T002.jsp"/>
+          <!-- Forward to T003 page -->
+        <forward name="T003" path="/WEB-INF/jsp/T003.jsp"/>
+    
     </global-forwards>
 
     <!-- =========================================
@@ -53,17 +58,8 @@
                 parameter="getUserLogin">
         </action>
         
-        <!-- Initialize T002 page -->
-        <action path="/T002"
-                type="action.T002Action"
-                name="T002Form"
-                scope="request"
-                parameter="init"
-                validate="false">
-        </action>
-
         <!-- Perform search on T002 page -->
-         <action path="/T002Search"
+         <action path="/T002"
                  type="action.T002Action"
                  name="T002Form"
                  scope="request"
@@ -87,7 +83,25 @@
                 parameter="logout"
                 validate="false">
         </action>
-
+  
+        <action
+                path="/T003"
+                type="action.T003Action"
+                name="T003Form"
+                scope="request"
+                parameter="load"
+                validate="false"
+                input="/WEB-INF/jsp/T003.jsp">    
+         </action>
+          <action
+                path="/T003Save"
+                type="action.T003Action"
+                name="T003Form"
+                scope="request"
+                parameter="save"
+                validate="true"
+                input="/WEB-INF/jsp/T003.jsp">
+    </action>
     </action-mappings>
 
     <!-- =========================================

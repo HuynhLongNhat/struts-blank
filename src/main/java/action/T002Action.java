@@ -39,21 +39,6 @@ public class T002Action extends MappingDispatchAction {
 	private static final int PAGE_SIZE = 15;
 
 	/**
-	 * Initializes the T002 screen by displaying the customer list.
-	 *
-	 * @param mapping  The ActionMapping used to select this instance.
-	 * @param form     The optional ActionForm bean for this request.
-	 * @param request  The HTTP request we are processing.
-	 * @param response The HTTP response we are creating.
-	 * @return An ActionForward to the T002 JSP page.
-	 * @throws Exception If an application-level error occurs.
-	 */
-	public ActionForward init(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		return findCustomer(mapping, form, request, response);
-	}
-
-	/**
 	 * Executes a search operation on the T002 screen. This method relies on Struts
 	 * validation defined in {@link form.T002Form}.
 	 *
@@ -64,17 +49,8 @@ public class T002Action extends MappingDispatchAction {
 	 * @return An ActionForward to the T002 JSP page with search results.
 	 * @throws Exception If an application-level error occurs.
 	 */
-	@SuppressWarnings("deprecation")
 	public ActionForward search(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-		T002Form t002Form = (T002Form) form;
-		ActionErrors errors = t002Form.validate(mapping, request);
-		System.out.println("error :" + errors);
-		if (!errors.isEmpty()) {
-			saveErrors(request, errors);
-			System.out.println("gọi hàm này");
-			return findCustomer(mapping, form, request, response);
-		}
 		return findCustomer(mapping, form, request, response);
 	}
 
@@ -120,13 +96,13 @@ public class T002Action extends MappingDispatchAction {
 	 * @return An ActionForward to the T002 JSP page with customer data.
 	 * @throws Exception If an application-level error occurs.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	private ActionForward findCustomer(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		// Validate session
 		if (!Helper.isLogin(request)) {
-		    response.sendRedirect("T001.do");
-		    return null;
+			response.sendRedirect("T001.do");
+			return null;
 		}
 
 		HttpSession session = request.getSession();
@@ -139,12 +115,20 @@ public class T002Action extends MappingDispatchAction {
 		// Handle search action
 		String actionType = request.getParameter("actionType");
 		if ("search".equals(actionType) || sco == null) {
-		    sco = new T002SCO();
-		    sco.setCustomerName(t002Form.getCustomerName());
-		    sco.setSex(t002Form.getSex());
-		    sco.setBirthdayFrom(t002Form.getBirthdayFrom());
-		    sco.setBirthdayTo(t002Form.getBirthdayTo());
-		    session.setAttribute("T002SCO", sco);
+			sco = new T002SCO();
+			sco.setCustomerName(t002Form.getCustomerName());
+			sco.setSex(t002Form.getSex());
+			sco.setBirthdayFrom(t002Form.getBirthdayFrom());
+			sco.setBirthdayTo(t002Form.getBirthdayTo());
+			session.setAttribute("T002SCO", sco);
+			// Validate input
+			ActionErrors errors = t002Form.validate(mapping, request);
+			if (!errors.isEmpty()) {
+				sco = new T002SCO();
+				saveErrors(request, errors);
+			}
+			// Save SCO into session
+			session.setAttribute("T002SCO", sco);
 		}
 
 		// Handle pagination

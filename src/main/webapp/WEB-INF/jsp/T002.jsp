@@ -44,7 +44,7 @@
 		</div>
 
 		<!-- Search Form -->
-		<html:form action="/T002Search" styleClass="search-form" method="post">
+		<html:form action="/T002" styleClass="search-form" method="post">
 			<html:hidden property="actionType" value="search" />
 			<label> <bean:message key="label.customerName" /> <html:text
 					property="customerName" styleId="txtCustomerName" />
@@ -149,7 +149,7 @@
 										<bean:write name="customer" property="customerID" />
 									</html:multibox></td>
 								<td><a
-									href="T003?customerId=<bean:write name='customer' property='customerID'/>">
+									href="T003.do?customerId=<bean:write name='customer' property='customerID'/>">
 										<bean:write name="customer" property="customerID" />
 								</a></td>
 								<td><bean:write name="customer" property="customerName" /></td>
@@ -201,7 +201,7 @@
 	}
 
 	function redirectToEditPage() {
-		window.location.href = 'T003';
+		window.location.href = 'T003.do';
 	}
 
 	document.addEventListener("DOMContentLoaded", function () {

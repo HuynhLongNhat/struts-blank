@@ -9,14 +9,24 @@ function resetFormFields() {
 	}
 
 }
+
+function resetCustomerForm() {
+	const form = document.getElementById('customerForm');
+	if (form) {
+		form.reset();
+	}
+	const errorMessage = document.getElementById('lblErrorMessage');
+	if (errorMessage) {
+		errorMessage.textContent = '';
+	}
+
+}
 function showErrorMessage(message) {
 	if (message && message.trim() !== "") {
-		setTimeout(function() {
-		    alert(message);
-		}, 100); 
+		alert(message);
 	}
 }
 
 function redirectToEditPage() {
-    window.location.href = 'T003';
+    window.location.href = 'T003.do';
 }
