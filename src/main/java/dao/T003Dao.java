@@ -65,6 +65,8 @@ public class T003Dao {
      * @return {@code true} if insert was successful, otherwise {@code false}
      */
     public boolean insertCustomer(T002Dto customer, Integer psnCd) {
+    	System.out.println("customer, " + customer);
+    	System.out.println("psncd , " + psnCd);
         String sql = "INSERT INTO MSTCUSTOMER (CUSTOMER_ID, CUSTOMER_NAME, SEX, BIRTHDAY, EMAIL, ADDRESS, " +
                      "DELETE_YMD, INSERT_YMD, INSERT_PSN_CD, UPDATE_YMD, UPDATE_PSN_CD) " +
                      "VALUES (NEXT VALUE FOR SEQ_CUSTOMER_ID, ?, ?, ?, ?, ?, NULL, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)";

@@ -59,6 +59,7 @@ public class T003Service {
      * @throws SQLException if a database access error occurs
      */
     public boolean insertCustomer(T002Dto customer, Integer psnCd) throws SQLException {
+    	System.out.println("Vao ham nay");
         return t003Dao.insertCustomer(customer, psnCd);
     }
 

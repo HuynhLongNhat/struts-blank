@@ -115,7 +115,6 @@ public class T002Action extends MappingDispatchAction {
 		// Handle search action
 		String actionType = request.getParameter("actionType");
 		if ("search".equals(actionType) || sco == null) {
-			sco = new T002SCO();
 			sco.setCustomerName(t002Form.getCustomerName());
 			sco.setSex(t002Form.getSex());
 			sco.setBirthdayFrom(t002Form.getBirthdayFrom());
@@ -124,7 +123,6 @@ public class T002Action extends MappingDispatchAction {
 			// Validate input
 			ActionErrors errors = t002Form.validate(mapping, request);
 			if (!errors.isEmpty()) {
-				sco = new T002SCO();
 				saveErrors(request, errors);
 			}
 			// Save SCO into session
