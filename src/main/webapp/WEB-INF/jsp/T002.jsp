@@ -129,7 +129,6 @@
 		<!-- Customer List -->
 		<html:form action="/T002Delete" method="post">
 			<html:hidden property="actionType" value="delete" />
-
 			<table class="customer-table">
 				<thead>
 					<tr>
@@ -168,7 +167,7 @@
 					<bean:message key="label.addNew" />
 				</button>
 				<logic:notEmpty name="customers">
-					<html:submit property="btnDelete" styleClass="btn-delete"
+					<html:submit styleClass="btn-delete"
 						styleId="btnDelete">
 						<bean:message key="label.delete" />
 					</html:submit>

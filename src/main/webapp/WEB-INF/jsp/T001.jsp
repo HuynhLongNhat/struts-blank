@@ -41,7 +41,7 @@
 				<html:submit property="btnLogin" styleId="btnLogin">
 					<bean:message key="button.login" />
 				</html:submit>
-				<html:reset styleId="btnClear" onclick="clearFormFields(); return false;">
+				<html:reset styleId="btnClear" onclick="clearFormLogin(); return false;">
 					<bean:message key="button.clear" />
 				</html:reset>
 			</div>
@@ -49,7 +49,7 @@
 		</html:form>
 	</div>
 	<%@ include file="Footer.jsp"%>
-	<script src="<%=request.getContextPath()%>/WebContent/js/script.js"></script>
+	<script src="<%=request.getContextPath()%>/WebContent/js/script.js?ts=<%=System.currentTimeMillis()%>"></script>
 	<script>
 	function clearFormFields() {
 	    document.getElementById('txtuserID').value = '';

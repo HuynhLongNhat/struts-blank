@@ -1,5 +1,7 @@
 package action;
 
+import java.sql.SQLException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -60,44 +62,43 @@ public class T003Action extends MappingDispatchAction {
 
 		return mapping.findForward("T003");
 	}
-
 	/**
 	 * Saves the customer (insert or update).
 	 */
 	public ActionForward save(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		if (!Helper.isLogin(request)) {
-			return new ActionForward("T001.do", true);
-		}
+	                           HttpServletResponse response) throws Exception {
+	    if (!Helper.isLogin(request)) {
+	        return new ActionForward("T001.do", true);
+	    }
 
-		T003Form t003Form = (T003Form) form;
-		T002Dto customer = new T002Dto();
-		customer.setCustomerID(t003Form.getCustomerId());
-		customer.setCustomerName(t003Form.getCustomerName());
-		customer.setSex(t003Form.getSex());
-		customer.setBirthday(t003Form.getBirthday());
-		customer.setEmail(t003Form.getEmail());
-		customer.setAddress(t003Form.getAddress());
-		System.out.println(t003Form.getCustomerId());
-	    String mode = (t003Form.getCustomerId() == null) ? "ADD" : "EDIT";
+	    T003Form t003Form = (T003Form) form;
+	    T002Dto customer = new T002Dto();
+	    customer.setCustomerID(t003Form.getCustomerId());
+	    customer.setCustomerName(t003Form.getCustomerName());
+	    customer.setSex(t003Form.getSex());
+	    customer.setBirthday(t003Form.getBirthday());
+	    customer.setEmail(t003Form.getEmail());
+	    customer.setAddress(t003Form.getAddress());
 
-		HttpSession session = request.getSession(false);
-		T001Dto loggedInUser = (T001Dto) session.getAttribute("user");
-		Integer psnCd = (loggedInUser != null) ? loggedInUser.getPsnCd() : null;
-		try {
-			System.out.println(mode);
-			boolean success = "ADD".equals(mode) ? t003Service.insertCustomer(customer, psnCd)
-					: t003Service.updateCustomer(customer, psnCd);
-            System.out.println("success" + success);
-			if (success) {
-				return new ActionForward("T002.do", true);
-			} else {
-				request.setAttribute("errorMessage", "Đã xảy ra lỗi khi lưu dữ liệu.");
-				return mapping.findForward("T003");
-			}
-		} catch (Exception e) {
-			throw new ServletException("Database error occurred while saving customer.", e);
-		}
+	    String mode = t003Form.getMode();
 
+	    HttpSession session = request.getSession(false);
+	    T001Dto loggedInUser = (T001Dto) session.getAttribute("user");
+	    Integer psnCd = (loggedInUser != null) ? loggedInUser.getPsnCd() : null;
+
+	    try {
+	        if ("ADD".equals(mode)) {
+	            t003Service.insertCustomer(customer, psnCd);
+	        } else {
+	            t003Service.updateCustomer(customer, psnCd);
+	        }
+	        // Nếu không exception → coi như thành công → redirect
+	        return new ActionForward("T002.do", true);
+	    } catch (SQLException e) {
+	        throw new ServletException("Database error occurred while saving customer.", e);
+	    } catch (Exception e) {
+	        return mapping.findForward("T003");
+	      
+	    }
 	}
 }

@@ -189,28 +189,29 @@ public class T002Form extends ActionForm {
 	@Override
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-		try {
-			LocalDate from = null;
-			LocalDate to = null;
-
-			if (!Helper.isEmpty(birthdayFrom)) {
-				from = LocalDate.parse(birthdayFrom.trim(), formatter);
-			}
-
-			if (!Helper.isEmpty(birthdayTo)) {
-				to = LocalDate.parse(birthdayTo.trim(), formatter);
-			}
-
-			if (from != null && to != null && to.isBefore(from)) {
-				errors.add("birthdayRange", new ActionMessage("error.birthday.range"));
-			}
-		} catch (DateTimeParseException e) {
-			if (e.getParsedString().equals(birthdayFrom)) {
-				errors.add("birthdayFrom", new ActionMessage("error.birthdayFrom.format"));
-			} else {
-				errors.add("birthdayTo", new ActionMessage("error.birthdayTo.format"));
-			}
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+			try {
+				LocalDate from = null;
+				LocalDate to = null;
+				
+				if (!Helper.isEmpty(birthdayFrom)) {
+					from = LocalDate.parse(birthdayFrom.trim(), formatter);
+				}
+				
+				if (!Helper.isEmpty(birthdayTo)) {
+					to = LocalDate.parse(birthdayTo.trim(), formatter);
+				}
+				
+				if (from != null && to != null && to.isBefore(from)) {
+					errors.add("birthdayRange", new ActionMessage("error.birthday.range"));
+				}
+			} catch (DateTimeParseException e) {
+				if (e.getParsedString().equals(birthdayFrom)) {
+					errors.add("birthdayFrom", new ActionMessage("error.birthdayFrom.format"));
+				} else {
+					errors.add("birthdayTo", new ActionMessage("error.birthdayTo.format"));
+				}
+			
 		}
 		return errors;
 	}

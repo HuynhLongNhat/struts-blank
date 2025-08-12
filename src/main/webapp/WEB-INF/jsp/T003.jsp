@@ -47,6 +47,7 @@
 
 		<div class="form-container">
 			<html:form action="/T003Save" method="post" styleId="customerForm">
+			<html:hidden property="mode" />
 				<div class="error-message">
 					<html:errors />
 				</div>
@@ -108,7 +109,7 @@
 					<html:submit styleId="btnSave">
 						<bean:message key="T003.button.save" />
 					</html:submit>
-					<html:reset styleId="btnClear">
+					<html:reset styleId="btnClear" onclick="clearFormEdit(); return false;">
 						<bean:message key="T003.button.clear" />
 					</html:reset>
 				</div>
@@ -117,7 +118,7 @@
 	</div>
 
 	<%@ include file="Footer.jsp"%>
-	<script src="<%=request.getContextPath()%>/WebContent/js/script.js"></script>
+	<script src="<%=request.getContextPath()%>/WebContent/js/script.js?ts=<%=System.currentTimeMillis()%>"></script>
 	<script>
 		function resetCustomerForm() {
 			const form = document.getElementById('customerForm');

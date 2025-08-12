@@ -64,9 +64,7 @@ public class T003Dao {
      * @param psnCd    personal code of the user performing the operation
      * @return {@code true} if insert was successful, otherwise {@code false}
      */
-    public boolean insertCustomer(T002Dto customer, Integer psnCd) {
-    	System.out.println("customer, " + customer);
-    	System.out.println("psncd , " + psnCd);
+    public void insertCustomer(T002Dto customer, Integer psnCd) throws SQLException {
         String sql = "INSERT INTO MSTCUSTOMER (CUSTOMER_ID, CUSTOMER_NAME, SEX, BIRTHDAY, EMAIL, ADDRESS, " +
                      "DELETE_YMD, INSERT_YMD, INSERT_PSN_CD, UPDATE_YMD, UPDATE_PSN_CD) " +
                      "VALUES (NEXT VALUE FOR SEQ_CUSTOMER_ID, ?, ?, ?, ?, ?, NULL, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)";
@@ -78,21 +76,14 @@ public class T003Dao {
             stmt.setInt(6, psnCd); // INSERT_PSN_CD
             stmt.setInt(7, psnCd); // UPDATE_PSN_CD
 
-            return stmt.executeUpdate() > 0;
+            stmt.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error inserting customer", e);
         }
-        return false;
     }
 
-    /**
-     * Updates an existing customer record.
-     *
-     * @param customer customer data to update
-     * @param psnCd    personal code of the user performing the update
-     * @return {@code true} if update was successful, otherwise {@code false}
-     */
-    public boolean updateCustomer(T002Dto customer, Integer psnCd) {
+
+    public void updateCustomer(T002Dto customer, Integer psnCd) throws SQLException {
         String sql = "UPDATE MSTCUSTOMER " +
                      "SET CUSTOMER_NAME = ?, SEX = ?, BIRTHDAY = ?, EMAIL = ?, ADDRESS = ?, " +
                      "DELETE_YMD = NULL, UPDATE_YMD = CURRENT_TIMESTAMP, UPDATE_PSN_CD = ? " +
@@ -105,11 +96,8 @@ public class T003Dao {
             stmt.setInt(6, psnCd);                   // UPDATE_PSN_CD
             stmt.setInt(7, customer.getCustomerID()); // WHERE clause
 
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
+            stmt.executeUpdate();
         }
-        return false;
     }
 
     /**

@@ -54,18 +54,9 @@ public class T002Service {
      *         - "totalCount": total matching records
      * @throws SQLException if database access fails
      */
-    public Map<String, Object> searchCustomers(T002SCO sco, int offset, int limit) throws SQLException {
-        return t002Dao.searchCustomers(
-            sco != null ? sco.getCustomerName() : null,
-            sco != null ? sco.getSex() : null,
-            sco != null ? sco.getBirthdayFrom() : null,
-            sco != null ? sco.getBirthdayTo() : null,
-            offset,
-            limit
-        );
-    }
-
-
+	public Map<String, Object> searchCustomers(T002SCO sco, int offset, int limit) throws SQLException {
+		return t002Dao.searchCustomers(sco, offset, limit);
+	}
     /**
      * Marks customers as deleted based on the provided list of IDs.
      *
