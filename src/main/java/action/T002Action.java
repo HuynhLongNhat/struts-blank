@@ -13,7 +13,6 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
 import org.apache.struts.actions.MappingDispatchAction;
 
 import dto.T002Dto;
@@ -67,16 +66,14 @@ public class T002Action extends MappingDispatchAction {
 	@SuppressWarnings("deprecation")
 	public ActionForward delete(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-		ActionErrors errors = new ActionErrors();
 		T002Form t002Form = (T002Form) form;
-		String[] ids = t002Form.getCustomerIds();
-
+		ActionErrors errors = t002Form.validate(mapping, request);
 		// If no rows are selected, return with an error message
-		if (ids == null || ids.length == 0) {
-			errors.add("error.customerId.required", new ActionMessage("error.customerId.required"));
+		if (!errors.isEmpty()) {
 			saveErrors(request, errors);
 			return findCustomer(mapping, form, request, response);
 		}
+		String[] ids = t002Form.getCustomerIds();
 		// Perform deletion using the service layer
 		try {
 			t002Service.deleteCustomers(Arrays.asList(ids));
@@ -104,26 +101,21 @@ public class T002Action extends MappingDispatchAction {
 			response.sendRedirect("T001.do");
 			return null;
 		}
-
 		HttpSession session = request.getSession();
 		T002Form t002Form = (T002Form) form;
-		T002SCO sco = (T002SCO) session.getAttribute("T002SCO");
-		if (sco == null) {
-			sco = new T002SCO();
-			session.setAttribute("T002SCO", sco);
-		}
+		T002SCO sco = getSCO(request);
 		// Handle search action
 		String actionType = request.getParameter("actionType");
 		if ("search".equals(actionType) || sco == null) {
 			sco.setCustomerName(t002Form.getCustomerName());
-			sco.setSex(t002Form.getSex());
-			sco.setBirthdayFrom(t002Form.getBirthdayFrom());
-			sco.setBirthdayTo(t002Form.getBirthdayTo());
-			session.setAttribute("T002SCO", sco);
+			sco.setSex(t002Form.getSex());			
 			// Validate input
 			ActionErrors errors = t002Form.validate(mapping, request);
 			if (!errors.isEmpty()) {
 				saveErrors(request, errors);
+			}else {
+				sco.setBirthdayFrom(t002Form.getBirthdayFrom());
+				sco.setBirthdayTo(t002Form.getBirthdayTo());
 			}
 			// Save SCO into session
 			session.setAttribute("T002SCO", sco);
@@ -192,5 +184,14 @@ public class T002Action extends MappingDispatchAction {
 			session.removeAttribute("user");
 		}
 		return new ActionForward("T001.do", true);
+	}
+	private T002SCO getSCO(HttpServletRequest request) {
+	    HttpSession session = request.getSession();
+	    T002SCO sco = (T002SCO) session.getAttribute("T002SCO");
+	    if (sco == null) {
+	        sco = new T002SCO();
+	        session.setAttribute("T002SCO", sco);
+	    }
+	    return sco;
 	}
 }
