@@ -39,69 +39,38 @@
          Define how incoming requests (by path)
          are handled by corresponding Action classes.
          ========================================= -->
-    <action-mappings>
-        
-        <!-- Show login form -->
+    <action-mappings>        
         <action path="/T001"
-                type="action.T001Action"
-                parameter="showLoginForm"
-                validate="false">
-        </action>
-
-        <!-- Process user login -->
-        <action path="/T001Login"
                 type="action.T001Action"
                 name="T001Form"
                 scope="request"
-                validate="true"
+                validate="false"
                 input="/WEB-INF/jsp/T001.jsp"
-                parameter="getUserLogin">
+                parameter="action">
+             <forward name="T002" path="/T002.do" redirect="true"/>
         </action>
         
-        <!-- Perform search on T002 page -->
          <action path="/T002"
                  type="action.T002Action"
                  name="T002Form"
                  scope="request"
-                 parameter="search"
+                 parameter="action"
                  validate="false"
                  input="/WEB-INF/jsp/T002.jsp">
+               <forward name="T001" path="/T001.do" redirect="true"/>
         </action>
 
-        <!-- Delete record on T002 page -->
-        <action path="/T002Delete"
-                type="action.T002Action"
-                name="T002Form"
-                scope="request"
-                parameter="delete"
-                validate="false">
-        </action>
-
-        <!-- Logout and redirect to login -->
-        <action path="/T002Logout"
-                type="action.T002Action"
-                parameter="logout"
-                validate="false">
-        </action>
-  
         <action
                 path="/T003"
                 type="action.T003Action"
                 name="T003Form"
                 scope="request"
-                parameter="load"
+                parameter="action"
                 validate="false"
-                input="/WEB-INF/jsp/T003.jsp">    
+                input="/WEB-INF/jsp/T003.jsp">   
+               <forward name="T001" path="/T001.do" redirect="true"/> 
          </action>
-          <action
-                path="/T003Save"
-                type="action.T003Action"
-                name="T003Form"
-                scope="request"
-                parameter="save"
-                validate="true"
-                input="/WEB-INF/jsp/T003.jsp">
-    </action>
+         
     </action-mappings>
 
     <!-- =========================================

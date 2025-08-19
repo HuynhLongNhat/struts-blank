@@ -12,7 +12,7 @@ package dto;
 public class T001Dto {
 
     /** Unique personal code of this user */
-    private Integer psnCd;
+    private int psnCd;
 
     /** User ID used for login authentication */
     private String userId;
@@ -28,7 +28,7 @@ public class T001Dto {
      *
      * @return the personal code
      */
-    public Integer getPsnCd() {
+    public int getPsnCd() {
         return psnCd;
     }
 

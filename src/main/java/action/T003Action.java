@@ -12,6 +12,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.actions.MappingDispatchAction;
 
+import common.Constants;
 import dto.T001Dto;
 import dto.T002Dto;
 import form.T003Form;
@@ -25,43 +26,57 @@ import utils.Helper;
 public class T003Action extends MappingDispatchAction {
 
 	private final T003Service t003Service = T003Service.getInstance();
-
+  
+	@Override
+	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+			HttpServletResponse response) throws Exception {
+		String action = request.getParameter("action");
+		if (Constants.ACTION_SAVE.equals(action)) {
+			return save(mapping, form, request, response);
+		}
+		return load(mapping, form, request, response);
+	}
 	/**
 	 * Loads the customer form.
 	 */
 	public ActionForward load(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		if (!Helper.isLogin(request)) {
-			return new ActionForward("T001.do", true);
-		}
+	        HttpServletResponse response) throws Exception {
+	    
+	    if (!Helper.isLogin(request)) {
+	        return new ActionForward("T001.do", true);
+	    }
 
-		T003Form t003Form = (T003Form) form;
-		String customerIdStr = request.getParameter("customerId");
+	    T003Form t003Form = (T003Form) form;
+	    String customerIdParam = request.getParameter("customerId");
 
-		if (customerIdStr != null && !customerIdStr.trim().isEmpty()) {
-			try {
-				Integer customerId = Integer.parseInt(customerIdStr.trim());
-				T002Dto customer = t003Service.getCustomerById(customerId);
-				if (customer != null) {
-					t003Form.setCustomerId(customer.getCustomerID());
-					t003Form.setCustomerName(customer.getCustomerName());
-					t003Form.setSex(customer.getSex());
-					t003Form.setBirthday(customer.getBirthday());
-					t003Form.setEmail(customer.getEmail());
-					t003Form.setAddress(customer.getAddress());
-					t003Form.setMode("EDIT");
-				} else {
-					t003Form.setMode("ADD");
-				}
-			} catch (NumberFormatException e) {
-				t003Form.setMode("ADD");
-			}
-		} else {
-			t003Form.setMode("ADD");
-		}
+	    if (customerIdParam != null && !customerIdParam.trim().isEmpty()) {
+	        try {
+	            Integer customerId = Integer.parseInt(customerIdParam.trim());
+	            T002Dto customer = t003Service.getCustomerById(customerId);
 
-		return mapping.findForward("T003");
+	            if (customer != null) {
+	                t003Form.setCustomerId(customer.getCustomerID());
+	                t003Form.setCustomerName(customer.getCustomerName());
+	                t003Form.setSex(customer.getSex());
+	                t003Form.setBirthday(customer.getBirthday());
+	                t003Form.setEmail(customer.getEmail());
+	                t003Form.setAddress(customer.getAddress());
+	                t003Form.setMode("EDIT");
+	            } else {
+	                t003Form.setMode("ADD");
+	            }
+	        } catch (NumberFormatException e) {
+	            // Nếu parameter không phải số
+	            t003Form.setMode("ADD");
+	        }
+	    } else {
+	        // Nếu không có customerId
+	        t003Form.setMode("ADD");
+	    }
+
+	    return mapping.findForward("T003");
 	}
+
 	/**
 	 * Saves the customer (insert or update).
 	 */

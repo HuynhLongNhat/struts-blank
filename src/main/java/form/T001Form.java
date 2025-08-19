@@ -36,7 +36,7 @@ public class T001Form extends ActionForm {
 	private static final long serialVersionUID = 1L;
 
 	/** Unique personal code of the user. */
-	private Integer psnCd;
+	private int psnCd;
 
 	/** User ID used for login authentication. */
 	private String userId;
@@ -52,7 +52,7 @@ public class T001Form extends ActionForm {
 	 *
 	 * @return the personal code of the user
 	 */
-	public Integer getPsnCd() {
+	public int getPsnCd() {
 		return psnCd;
 	}
 
@@ -61,7 +61,7 @@ public class T001Form extends ActionForm {
 	 *
 	 * @param psnCd the personal code to set
 	 */
-	public void setPsnCd(Integer psnCd) {
+	public void setPsnCd(int psnCd) {
 		this.psnCd = psnCd;
 	}
 

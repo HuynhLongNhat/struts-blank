@@ -31,7 +31,7 @@
 
 
 			</span>
-			<html:link action="/T002Logout">
+			<html:link action="/T002.do?action=logout">
 				<bean:message key="label.logout" />
 			</html:link>
 		</div>
@@ -44,7 +44,7 @@
 		</div>
 
 		<!-- Search Form -->
-		<html:form action="/T002" styleClass="search-form" method="post">
+		<html:form action="/T002.do" styleClass="search-form" method="post">
 			<html:hidden property="actionType" value="search" />
 			<label> <bean:message key="label.customerName" /> <html:text
 					property="customerName" styleId="txtCustomerName" />
@@ -79,7 +79,7 @@
 					<button id="btnFirst" disabled>&lt;&lt;</button>
 				</logic:equal>
 				<logic:notEqual name="disableFirst" value="true">
-					<html:form action="/T002" method="post" style="display:inline;">
+					<html:form action="/T002.do" method="post" style="display:inline;">
 						<input type="hidden" name="currentPage" value="1" />
 						<html:submit styleId="btnFirst">&lt;&lt;</html:submit>
 					</html:form>
@@ -89,7 +89,7 @@
 					<button id="btnPrevious" disabled>&lt;</button>
 				</logic:equal>
 				<logic:notEqual name="disablePrevious" value="true">
-					<html:form action="/T002" method="post" style="display:inline;">
+					<html:form action="/T002.do" method="post" style="display:inline;">
 						<input type="hidden" name="currentPage"
 							value="<bean:write name='T002Form' property='prevPage'/>" />
 						<html:submit styleId="btnPrevious">&lt;</html:submit>
@@ -106,7 +106,7 @@
 					<button id="btnNext" disabled>&gt;</button>
 				</logic:equal>
 				<logic:notEqual name="disableNext" value="true">
-					<html:form action="/T002" method="post" style="display:inline;">
+					<html:form action="/T002.do" method="post" style="display:inline;">
 						<input type="hidden" name="currentPage"
 							value="<bean:write name='T002Form' property='nextPage'/>" />
 						<html:submit styleId="btnNext">&gt;</html:submit>
@@ -117,7 +117,7 @@
 					<button id="btnLast" disabled>&gt;&gt;</button>
 				</logic:equal>
 				<logic:notEqual name="disableLast" value="true">
-					<html:form action="/T002" method="post" style="display:inline;">
+					<html:form action="/T002.do" method="post" style="display:inline;">
 						<input type="hidden" name="currentPage"
 							value="<bean:write name='T002Form' property='totalPages'/>" />
 						<html:submit styleId="btnLast">&gt;&gt;</html:submit>
@@ -127,7 +127,7 @@
 		</div>
 
 		<!-- Customer List -->
-		<html:form action="/T002Delete" method="post">
+		<html:form action="/T002.do?action=remove" method="post">
 			<html:hidden property="actionType" value="delete" />
 			<table class="customer-table">
 				<thead>

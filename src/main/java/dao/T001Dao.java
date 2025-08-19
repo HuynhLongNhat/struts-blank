@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import dto.T001Dto;
+import form.T001Form;
 import utils.DBUtils;
 
 /**
@@ -42,7 +43,7 @@ public class T001Dao {
      * @return {@link T001Dto} with user details if credentials match, otherwise {@code null}
      * @throws SQLException if a database access error occurs
      */
-    public T001Dto getUserLogin(T001Dto inputDto) throws SQLException {
+    public T001Dto getUserLogin(T001Form t001Form) throws SQLException {
         // SQL query to validate user credentials
         String sql = """
                 SELECT USERID, USERNAME, PSN_CD
@@ -55,8 +56,8 @@ public class T001Dao {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             // Set query parameters from input DTO
-            ps.setString(1, inputDto.getUserId());
-            ps.setString(2, inputDto.getPassword());
+            ps.setString(1, t001Form.getUserId());
+            ps.setString(2, t001Form.getPassword());
 
             // Execute query and process result
             try (ResultSet rs = ps.executeQuery()) {

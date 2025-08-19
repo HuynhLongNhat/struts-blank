@@ -73,7 +73,7 @@ public class T002Form extends ActionForm {
 	// =========================
 
 	/** Array of selected customer IDs (e.g., for bulk delete). */
-	private String[] customerIds;
+	private int[] customerIds;
 
 	// =========================
 	// Pagination fields
@@ -127,11 +127,11 @@ public class T002Form extends ActionForm {
 		this.birthdayTo = birthdayTo;
 	}
 
-	public String[] getCustomerIds() {
+	public int[] getCustomerIds() {
 		return customerIds;
 	}
 
-	public void setCustomerIds(String[] customerIds) {
+	public void setCustomerIds(int[] customerIds) {
 		this.customerIds = customerIds;
 	}
 

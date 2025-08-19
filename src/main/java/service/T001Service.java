@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import dao.T001Dao;
 import dto.T001Dto;
+import form.T001Form;
 
 
 /**
@@ -59,8 +60,8 @@ public class T001Service {
 	 *         authentication fails
 	 * @throws SQLException if a database access error occurs
 	 */
-	public T001Dto getUserLogin(T001Dto t001dto) throws SQLException {
-	    return t001Dao.getUserLogin(t001dto);
+	public T001Dto getUserLogin(T001Form loginForm) throws SQLException {
+	    return t001Dao.getUserLogin(loginForm);
 	}
 
 }

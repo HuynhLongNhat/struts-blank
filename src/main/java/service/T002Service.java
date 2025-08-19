@@ -63,7 +63,7 @@ public class T002Service {
      * @param customerIds list of customer IDs to be marked as deleted
      * @throws SQLException if a database access error occurs
      */
-    public void deleteCustomers(List<String> customerIds) throws SQLException {
+    public void deleteCustomers(List<Integer> customerIds) throws SQLException {
         t002Dao.deleteCustomer(customerIds);
     }
 }

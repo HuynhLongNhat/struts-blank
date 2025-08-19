@@ -24,7 +24,7 @@
 			<html:errors  />
 		</label>
 		<!-- Form Struts -->
-		<html:form action="/T001Login" method="post">
+		<html:form action="/T001.do?action=login" method="post">
 			<div class="input-group">
 				<label for="txtuserID"> <bean:message key="label.userId" />
 				</label>

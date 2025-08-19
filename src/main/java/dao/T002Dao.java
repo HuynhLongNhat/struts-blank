@@ -138,7 +138,7 @@ public class T002Dao {
      * @param customerIds list of customer IDs to mark as deleted
      * @throws SQLException if the update operation fails
      */
-    public void deleteCustomer(List<String> customerIds) throws SQLException {
+    public void deleteCustomer(List<Integer> customerIds) throws SQLException {
         if (customerIds == null || customerIds.isEmpty()) return;
 
         // Build SQL query with placeholders for all IDs
@@ -150,7 +150,7 @@ public class T002Dao {
 
             // Set each ID in the prepared statement
             for (int i = 0; i < customerIds.size(); i++) {
-                ps.setString(i + 1, customerIds.get(i));
+                ps.setInt(i + 1, customerIds.get(i));
             }
             ps.executeUpdate();
         }
