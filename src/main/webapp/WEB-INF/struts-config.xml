@@ -44,7 +44,7 @@
                 type="action.T001Action"
                 name="T001Form"
                 scope="request"
-                validate="false"
+                validate="true"
                 input="/WEB-INF/jsp/T001.jsp"
                 parameter="action">
              <forward name="T002" path="/T002.do" redirect="true"/>
@@ -55,7 +55,7 @@
                  name="T002Form"
                  scope="request"
                  parameter="action"
-                 validate="false"
+                 validate="true"
                  input="/WEB-INF/jsp/T002.jsp">
                <forward name="T001" path="/T001.do" redirect="true"/>
         </action>
@@ -66,10 +66,20 @@
                 name="T003Form"
                 scope="request"
                 parameter="action"
-                validate="false"
+                validate="true"
                 input="/WEB-INF/jsp/T003.jsp">   
                <forward name="T001" path="/T001.do" redirect="true"/> 
+                <forward name="T002" path="/T002.do" redirect="true"/> 
          </action>
+          
+        <action 
+               path="/logout"
+               type="action.LogoutAction"
+               scope="request"
+               validate="false">
+           <forward name="T001" path="/T001.do" redirect="true"/>
+       </action>
+
          
     </action-mappings>
 

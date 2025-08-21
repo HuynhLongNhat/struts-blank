@@ -24,7 +24,8 @@
 			<html:errors  />
 		</label>
 		<!-- Form Struts -->
-		<html:form action="/T001.do?action=login" method="post">
+		<html:form action="/T001" method="post">
+		  <html:hidden property="action" value="login"/>
 			<div class="input-group">
 				<label for="txtuserID"> <bean:message key="label.userId" />
 				</label>
@@ -49,7 +50,7 @@
 		</html:form>
 	</div>
 	<%@ include file="Footer.jsp"%>
-	<script src="<%=request.getContextPath()%>/WebContent/js/script.js?ts=<%=System.currentTimeMillis()%>"></script>
+	<script src="<%=request.getContextPath()%>/WebContent/js/T001.js?ts=<%=System.currentTimeMillis()%>"></script>
 	<script>
 	function clearFormFields() {
 	    document.getElementById('txtuserID').value = '';

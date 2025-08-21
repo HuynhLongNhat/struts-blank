@@ -5,6 +5,9 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 
+import common.Constants;
+import utils.Helper;
+
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,7 +23,7 @@ public class T003Form extends ActionForm {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private Integer customerId;
+	private int customerId;
 	private String customerName;
 	private String sex;
 	private String birthday;
@@ -29,11 +32,11 @@ public class T003Form extends ActionForm {
 	private String mode; // "ADD" or "EDIT"
 
 	// Getters & Setters
-	public Integer getCustomerId() {
+	public int getCustomerId() {
 		return customerId;
 	}
 
-	public void setCustomerId(Integer customerId) {
+	public void setCustomerId(int customerId) {
 		this.customerId = customerId;
 	}
 
@@ -88,33 +91,33 @@ public class T003Form extends ActionForm {
 	@Override
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
-
-		// Birthday validation
-		if (birthday == null || birthday.trim().isEmpty()) {
-			errors.add("birthday", new ActionMessage("error.birthday.invalid"));
-			return errors; // Dừng xử lý luôn
-		} else {
-			try {
-				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-				LocalDate.parse(birthday.trim(), formatter);
-			} catch (DateTimeParseException e) {
-				errors.add("birthday", new ActionMessage("error.birthday.invalid"));
-				return errors; // Dừng xử lý luôn
-			}
-		}
-
-		// Email validation
-		if (email == null || email.trim().isEmpty()) {
-			errors.add("email", new ActionMessage("error.email.invalid"));
-			return errors;
-		} else {
-			String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
-			if (!email.matches(emailRegex)) {
-				errors.add("email", new ActionMessage("error.email.invalid"));
+		String action = request.getParameter(Constants.PARAM_ACTION);
+		if (Constants.ACTION_SAVE.equals(action)) {
+			// Birthday validation
+			if (Helper.isEmpty(birthday)) {
+				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_BIRTHDAY_INVALID));
 				return errors;
+			} else {
+				try {
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+					LocalDate.parse(birthday.trim(), formatter);
+				} catch (DateTimeParseException e) {
+					errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_BIRTHDAY_INVALID));
+					return errors;
+				}
+			}
+			// Email validation
+			if (Helper.isEmpty(email)) {
+				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_EMAIL_INVALID));
+				return errors;
+			} else {
+				String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+				if (!email.matches(emailRegex)) {
+					errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_EMAIL_INVALID));
+					return errors;
+				}
 			}
 		}
-
 		return errors;
 	}
 

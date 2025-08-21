@@ -11,6 +11,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 
+import common.Constants;
 import utils.Helper;
 
 /**
@@ -188,44 +189,41 @@ public class T002Form extends ActionForm {
 	 */
 	@Override
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-	    ActionErrors errors = new ActionErrors();
-
-	    String actionType = request.getParameter("actionType"); // hoặc actionType
-	    if ("delete".equals(actionType)) {
-	        if (customerIds == null || customerIds.length == 0) {
-	            errors.add("customerId", new ActionMessage("error.customerId.required"));
-	            return errors;
-	        }
-	    }
-	    if ("search".equals(actionType)) {
-	        validateBirthday(errors);
-	    }
-
-	    return errors;
+		ActionErrors errors = new ActionErrors();
+		String action = request.getParameter(Constants.PARAM_ACTION);
+		if (Constants.ACTION_REMOVE.equals(action)) {
+			if (customerIds == null || customerIds.length == 0) {
+				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_CUSTOMER_ID_REQUIRED));
+				return errors;
+			}
+		} else if (Constants.ACTION_SEARCH.equals(action)) {
+			validateBirthday(errors);
+		}
+		return errors;
 	}
 
 	private void validateBirthday(ActionErrors errors) {
-	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-	    try {
-	        LocalDate from = null;
-	        LocalDate to = null;
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+		try {
+			LocalDate from = null;
+			LocalDate to = null;
 
-	        if (!Helper.isEmpty(birthdayFrom)) {
-	            from = LocalDate.parse(birthdayFrom.trim(), formatter);
-	        }
-	        if (!Helper.isEmpty(birthdayTo)) {
-	            to = LocalDate.parse(birthdayTo.trim(), formatter);
-	        }
-	        if (from != null && to != null && to.isBefore(from)) {
-	            errors.add("birthdayRange", new ActionMessage("error.birthday.range"));
-	        }
-	    } catch (DateTimeParseException e) {
-	        if (e.getParsedString().equals(birthdayFrom)) {
-	            errors.add("birthdayFrom", new ActionMessage("error.birthdayFrom.format"));
-	        } else {
-	            errors.add("birthdayTo", new ActionMessage("error.birthdayTo.format"));
-	        }
-	    }
+			if (!Helper.isEmpty(birthdayFrom)) {
+				from = LocalDate.parse(birthdayFrom.trim(), formatter);
+			}
+			if (!Helper.isEmpty(birthdayTo)) {
+				to = LocalDate.parse(birthdayTo.trim(), formatter);
+			}
+			if (from != null && to != null && to.isBefore(from)) {
+				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_BIRTHDAY_RANGE));
+			}
+		} catch (DateTimeParseException e) {
+			if (e.getParsedString().equals(birthdayFrom)) {
+				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_BIRTHDAY_FROM_FORMAT));
+			} else {
+				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_BIRTHDAY_TO_FORMAT));
+			}
+		}
 	}
 
 }

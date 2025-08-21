@@ -30,7 +30,7 @@
 			<span> <bean:message key="T003.label.welcome" /> <label
 				id="lblUserName">${user.userName}</label>
 			</span>
-			<html:link action="/T002Logout">
+			<html:link action="/logout">
 				<bean:message key="T003.label.logout" />
 			</html:link>
 		</div>
@@ -46,7 +46,8 @@
 		</div>
 
 		<div class="form-container">
-			<html:form action="/T003Save" method="post" styleId="customerForm">
+			<html:form action="/T003" method="post" styleId="customerForm">
+			  <html:hidden property="action" value="save"/>
 			<html:hidden property="mode" />
 				<div class="error-message">
 					<html:errors />
@@ -118,19 +119,6 @@
 	</div>
 
 	<%@ include file="Footer.jsp"%>
-	<script src="<%=request.getContextPath()%>/WebContent/js/script.js?ts=<%=System.currentTimeMillis()%>"></script>
-	<script>
-		function resetCustomerForm() {
-			const form = document.getElementById('customerForm');
-			if (form) {
-				form.reset();
-			}
-			const errorMessage = document.getElementById('lblErrorMessage');
-			if (errorMessage) {
-				errorMessage.textContent = '';
-			}
-
-		}
-	</script>
+	<script src="<%=request.getContextPath()%>/WebContent/js/T003.js?ts=<%=System.currentTimeMillis()%>"></script>
 </body>
 </html>

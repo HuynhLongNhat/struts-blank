@@ -1,8 +1,5 @@
 package action;
 
-import java.sql.SQLException;
-
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -14,7 +11,6 @@ import org.apache.struts.actions.MappingDispatchAction;
 
 import common.Constants;
 import dto.T001Dto;
-import dto.T002Dto;
 import form.T003Form;
 import service.T003Service;
 import utils.Helper;
@@ -30,7 +26,7 @@ public class T003Action extends MappingDispatchAction {
 	@Override
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-		String action = request.getParameter("action");
+		String action = request.getParameter(Constants.PARAM_ACTION);
 		if (Constants.ACTION_SAVE.equals(action)) {
 			return save(mapping, form, request, response);
 		}
@@ -41,40 +37,12 @@ public class T003Action extends MappingDispatchAction {
 	 */
 	public ActionForward load(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 	        HttpServletResponse response) throws Exception {
-	    
 	    if (!Helper.isLogin(request)) {
-	        return new ActionForward("T001.do", true);
-	    }
-
+	    	  return mapping.findForward(Constants.T001_LOGIN);
+	    }  
 	    T003Form t003Form = (T003Form) form;
-	    String customerIdParam = request.getParameter("customerId");
-
-	    if (customerIdParam != null && !customerIdParam.trim().isEmpty()) {
-	        try {
-	            Integer customerId = Integer.parseInt(customerIdParam.trim());
-	            T002Dto customer = t003Service.getCustomerById(customerId);
-
-	            if (customer != null) {
-	                t003Form.setCustomerId(customer.getCustomerID());
-	                t003Form.setCustomerName(customer.getCustomerName());
-	                t003Form.setSex(customer.getSex());
-	                t003Form.setBirthday(customer.getBirthday());
-	                t003Form.setEmail(customer.getEmail());
-	                t003Form.setAddress(customer.getAddress());
-	                t003Form.setMode("EDIT");
-	            } else {
-	                t003Form.setMode("ADD");
-	            }
-	        } catch (NumberFormatException e) {
-	            // Nếu parameter không phải số
-	            t003Form.setMode("ADD");
-	        }
-	    } else {
-	        // Nếu không có customerId
-	        t003Form.setMode("ADD");
-	    }
-
-	    return mapping.findForward("T003");
+	    t003Service.getCustomerById(t003Form, request);
+	    return mapping.findForward(Constants.T003_EDIT);
 	}
 
 	/**
@@ -83,37 +51,17 @@ public class T003Action extends MappingDispatchAction {
 	public ActionForward save(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 	                           HttpServletResponse response) throws Exception {
 	    if (!Helper.isLogin(request)) {
-	        return new ActionForward("T001.do", true);
+	    	  return mapping.findForward(Constants.T001_LOGIN);
 	    }
-
 	    T003Form t003Form = (T003Form) form;
-	    T002Dto customer = new T002Dto();
-	    customer.setCustomerID(t003Form.getCustomerId());
-	    customer.setCustomerName(t003Form.getCustomerName());
-	    customer.setSex(t003Form.getSex());
-	    customer.setBirthday(t003Form.getBirthday());
-	    customer.setEmail(t003Form.getEmail());
-	    customer.setAddress(t003Form.getAddress());
-
-	    String mode = t003Form.getMode();
-
 	    HttpSession session = request.getSession(false);
-	    T001Dto loggedInUser = (T001Dto) session.getAttribute("user");
-	    Integer psnCd = (loggedInUser != null) ? loggedInUser.getPsnCd() : null;
-
-	    try {
-	        if ("ADD".equals(mode)) {
-	            t003Service.insertCustomer(customer, psnCd);
-	        } else {
-	            t003Service.updateCustomer(customer, psnCd);
-	        }
-	        // Nếu không exception → coi như thành công → redirect
-	        return new ActionForward("T002.do", true);
-	    } catch (SQLException e) {
-	        throw new ServletException("Database error occurred while saving customer.", e);
-	    } catch (Exception e) {
-	        return mapping.findForward("T003");
-	      
-	    }
+		T001Dto loggedInUser = (T001Dto) session.getAttribute(Constants.SESSION_USER);
+		Integer psnCd = (loggedInUser != null) ? loggedInUser.getPsnCd() : null;
+	    boolean success = t003Service.saveCustomer(t003Form, request, psnCd);
+        if (success) {
+            return mapping.findForward(Constants.T002_SEARCH);
+        } else {
+            return mapping.findForward(Constants.T003_EDIT);
+        }
 	}
 }

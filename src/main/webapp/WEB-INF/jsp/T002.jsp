@@ -28,10 +28,8 @@
 					name="user">
 					<bean:write name="user" property="userName" />
 				</logic:present>
-
-
 			</span>
-			<html:link action="/T002.do?action=logout">
+			<html:link action="/logout">
 				<bean:message key="label.logout" />
 			</html:link>
 		</div>
@@ -44,8 +42,8 @@
 		</div>
 
 		<!-- Search Form -->
-		<html:form action="/T002.do" styleClass="search-form" method="post">
-			<html:hidden property="actionType" value="search" />
+		<html:form action="/T002" styleClass="search-form" method="post">
+			<html:hidden property="action" value="search" />
 			<label> <bean:message key="label.customerName" /> <html:text
 					property="customerName" styleId="txtCustomerName" />
 			</label>
@@ -66,7 +64,6 @@
 					property="birthdayFrom" styleId="txtBirthdayFrom" /> - <html:text
 					property="birthdayTo" styleId="txtBirthdayTo" />
 			</label>
-
 			<html:submit styleId="btnSearch">
 				<bean:message key="label.search" />
 			</html:submit>
@@ -89,7 +86,7 @@
 					<button id="btnPrevious" disabled>&lt;</button>
 				</logic:equal>
 				<logic:notEqual name="disablePrevious" value="true">
-					<html:form action="/T002.do" method="post" style="display:inline;">
+					<html:form action="/T002" method="post" style="display:inline;">
 						<input type="hidden" name="currentPage"
 							value="<bean:write name='T002Form' property='prevPage'/>" />
 						<html:submit styleId="btnPrevious">&lt;</html:submit>
@@ -106,7 +103,7 @@
 					<button id="btnNext" disabled>&gt;</button>
 				</logic:equal>
 				<logic:notEqual name="disableNext" value="true">
-					<html:form action="/T002.do" method="post" style="display:inline;">
+					<html:form action="/T002" method="post" style="display:inline;">
 						<input type="hidden" name="currentPage"
 							value="<bean:write name='T002Form' property='nextPage'/>" />
 						<html:submit styleId="btnNext">&gt;</html:submit>
@@ -117,7 +114,7 @@
 					<button id="btnLast" disabled>&gt;&gt;</button>
 				</logic:equal>
 				<logic:notEqual name="disableLast" value="true">
-					<html:form action="/T002.do" method="post" style="display:inline;">
+					<html:form action="/T002" method="post" style="display:inline;">
 						<input type="hidden" name="currentPage"
 							value="<bean:write name='T002Form' property='totalPages'/>" />
 						<html:submit styleId="btnLast">&gt;&gt;</html:submit>
@@ -125,10 +122,9 @@
 				</logic:notEqual>
 			</div>
 		</div>
-
 		<!-- Customer List -->
-		<html:form action="/T002.do?action=remove" method="post">
-			<html:hidden property="actionType" value="delete" />
+		<html:form action="/T002" method="post">
+		   <html:hidden property="action" value="remove"/>			
 			<table class="customer-table">
 				<thead>
 					<tr>
@@ -184,7 +180,7 @@
 	<%@ include file="Footer.jsp"%>
 
 	<script
-		src="<%=request.getContextPath()%>/WebContent/js/script.js?<%=System.currentTimeMillis()%>"></script>
+		src="<%=request.getContextPath()%>/WebContent/js/T002.js?<%=System.currentTimeMillis()%>"></script>
 	<script>
 	document.addEventListener("DOMContentLoaded", function () {
 		var errorElement = document.getElementById("errorMessages");

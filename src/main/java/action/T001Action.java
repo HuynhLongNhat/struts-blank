@@ -4,13 +4,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.struts.Globals;
 import org.apache.struts.action.Action;
-import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.apache.struts.action.ActionMessages;
 import org.apache.struts.actions.MappingDispatchAction;
 
 import common.Constants;
@@ -35,7 +34,7 @@ public class T001Action extends Action {
 	@Override
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-		String action = request.getParameter("action");
+		String action = request.getParameter(Constants.PARAM_ACTION);
 		if (Constants.ACTION_LOGIN.equals(action)) {
 			return getUserLogin(mapping, form, request, response);
 		}
@@ -88,21 +87,20 @@ public class T001Action extends Action {
 	public ActionForward getUserLogin(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		T001Form loginForm = (T001Form) form;
-		ActionErrors errors = loginForm.validate(mapping, request);
-		if (!errors.isEmpty()) {
-			request.setAttribute(Globals.ERROR_KEY, errors);
-			return mapping.findForward(Constants.T001_LOGIN);
-		}
 		T001Dto user = t001Service.getUserLogin(loginForm);
 		if (user != null) {
 			// Store user in session after successful login
 			HttpSession session = request.getSession();
-			session.setAttribute("user", user);
+			session.setAttribute(Constants.SESSION_USER, user);
 			return mapping.findForward(Constants.T002_SEARCH);
 		} else {
+			ActionMessages errors = new ActionMessages();
 			// Login failed, return to login page with error message
-			errors.add("errorMessage", new ActionMessage("error.login.failed"));
-			request.setAttribute(Globals.ERROR_KEY, errors);
+			errors.add(
+				    Constants.GLOBAL, 
+				    new ActionMessage(Constants.ERROR_MSG_LOGIN_FAILED)
+				);
+			saveErrors(request, errors);
 			return mapping.findForward(Constants.T001_LOGIN);
 		}
 	}

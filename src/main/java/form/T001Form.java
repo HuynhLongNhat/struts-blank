@@ -7,6 +7,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 
+import common.Constants;
 import utils.Helper;
 
 /**
@@ -133,14 +134,18 @@ public class T001Form extends ActionForm {
 	@Override
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
-
-		if (Helper.isEmpty(userId)) {
-			errors.add("errorMessage", new ActionMessage("error.userId.required"));
-		} else if (Helper.isEmpty(password)) {
-			errors.add("errorMessage", new ActionMessage("error.password.required"));
-
+		String action = request.getParameter(Constants.PARAM_ACTION);
+		if (Constants.ACTION_LOGIN.equals(action)) {
+			if (Helper.isEmpty(userId)) {
+				errors.add(
+						Constants.GLOBAL,
+						new ActionMessage(Constants.ERROR_MSG_USER_ID_REQUIRED));
+			} else if (Helper.isEmpty(password)) {
+				errors.add(
+						Constants.GLOBAL,
+						new ActionMessage(Constants.ERROR_MSG_PASSWORD_REQUIRED));
+			}
 		}
-
 		return errors;
 	}
 }

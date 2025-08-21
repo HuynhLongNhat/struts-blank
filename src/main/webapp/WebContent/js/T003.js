@@ -1,18 +1,3 @@
-function clearFormLogin() {
-	const errorMessage = document.getElementById('lblErrorMessage');
-	const userID = document.getElementById("txtuserID");
-    const password = document.getElementById("txtpassword");
-	if (errorMessage) {
-		errorMessage.textContent = '';
-	}
-	if(userID) {
-		userID.value = "";
-	}
-	if(password) {
-		password.value = "";
-	}
-
-}
 
 function clearFormEdit() {
 	const errorMessage = document.getElementById('lblErrorMessage');
@@ -36,13 +21,4 @@ function clearFormEdit() {
 	}
 
 
-}
-function showErrorMessage(message) {
-	if (message && message.trim() !== "") {
-		alert(message);
-	}
-}
-
-function redirectToEditPage() {
-    window.location.href = 'T003.do';
 }
