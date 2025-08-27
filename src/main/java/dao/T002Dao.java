@@ -4,9 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +13,7 @@ import java.util.stream.Collectors;
 import dto.T002Dto;
 import dto.T002SCO;
 import utils.DBUtils;
+import utils.Helper;
 
 /**
  * DAO for handling customer information in the {@code MSTCUSTOMER} table.
@@ -60,40 +58,21 @@ public class T002Dao {
 		String birthdayFromStr = sco.getBirthdayFrom();
 		String birthdayToStr = sco.getBirthdayTo();
 
-		if (userName != null && !userName.trim().isEmpty()) {
+		if (!Helper.isEmpty(userName)) {
 			whereClause.append(" AND CUSTOMER_NAME LIKE ?");
 			params.add("%" + userName.trim() + "%");
 		}
-		if (sex != null && !sex.trim().isEmpty()) {
+		if (!Helper.isEmpty(sex)) {
 			whereClause.append(" AND SEX = ?");
 			params.add(sex.trim());
 		}
-
-		// Format ngày sinh yyyy/MM/dd
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-		java.sql.Date birthdayFrom = null;
-		java.sql.Date birthdayTo = null;
-
-		if (birthdayFromStr != null && !birthdayFromStr.trim().isEmpty()) {
-			try {
-				LocalDate localDateFrom = LocalDate.parse(birthdayFromStr.trim(), formatter);
-				birthdayFrom = java.sql.Date.valueOf(localDateFrom);
-				whereClause.append(" AND BIRTHDAY >= ?");
-				params.add(birthdayFrom);
-			} catch (DateTimeParseException e) {
-				e.printStackTrace();
-			}
+		if (!Helper.isEmpty(birthdayFromStr)) {
+			whereClause.append(" AND BIRTHDAY >= ?");
+			params.add(birthdayFromStr);
 		}
-
-		if (birthdayToStr != null && !birthdayToStr.trim().isEmpty()) {
-			try {
-				LocalDate localDateTo = LocalDate.parse(birthdayToStr.trim(), formatter);
-				birthdayTo = java.sql.Date.valueOf(localDateTo);
-				whereClause.append(" AND BIRTHDAY <= ?");
-				params.add(birthdayTo);
-			} catch (DateTimeParseException e) {
-				e.printStackTrace();
-			}
+		if (!Helper.isEmpty(birthdayToStr)) {
+			whereClause.append(" AND BIRTHDAY <= ?");
+			params.add(birthdayToStr);
 		}
 		// Đếm tổng bản ghi
 		int totalCount;
@@ -108,7 +87,7 @@ public class T002Dao {
 
 		// Truy vấn phân trang (SQL Server OFFSET FETCH)
 		String sql = "SELECT CUSTOMER_ID, CUSTOMER_NAME, "
-				+ "CASE WHEN SEX = '0' THEN 'Male' WHEN SEX = '1' THEN 'Female' END AS SEX, " + "BIRTHDAY, ADDRESS "
+				+ "CASE WHEN SEX = '0' THEN 'Male' WHEN SEX = '1' THEN 'Female' END AS SEX, " + "BIRTHDAY,EMAIL, ADDRESS "
 				+ "FROM MSTCUSTOMER" + whereClause + " ORDER BY CUSTOMER_ID " + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
 		List<Object> queryParams = new ArrayList<>(params);
@@ -117,7 +96,7 @@ public class T002Dao {
 
 		List<T002Dto> customers = new ArrayList<>();
 		try (Connection conn = DBUtils.getInstance().getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
 			setParameters(ps, queryParams);
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
@@ -182,6 +161,7 @@ public class T002Dao {
         dto.setCustomerName(rs.getString("CUSTOMER_NAME"));
         dto.setSex(rs.getString("SEX"));
         dto.setBirthday(rs.getString("BIRTHDAY"));
+        dto.setEmail(rs.getString("EMAIL"));
         dto.setAddress(rs.getString("ADDRESS"));
         return dto;
     }

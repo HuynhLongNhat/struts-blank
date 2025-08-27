@@ -32,6 +32,8 @@ public class Constants {
 
     /** Forward to customer edit screen (T003). */
     public static final String T003_EDIT = "T003";
+    
+    public static final String T004_IMPORT = "T004";
 
     // ============================================================
     // Action parameters (HTTP request actions)
@@ -51,6 +53,8 @@ public class Constants {
 
     /** Action parameter for saving a record (insert or update). */
     public static final String ACTION_SAVE = "save";
+    
+    public static final String ACTION_EXPORT = "export";
 
     // ============================================================
     // Mode identifiers (form operation mode)
@@ -124,10 +128,10 @@ public class Constants {
     public static final String ERROR_MSG_BIRTHDAY_RANGE = "error.birthday.range";
 
     /** Error key for invalid "birthday from" format. */
-    public static final String ERROR_MSG_BIRTHDAY_FROM_FORMAT = " error.birthdayFrom.format";
+    public static final String ERROR_MSG_BIRTHDAY_FROM_FORMAT = "error.birthdayFrom.format";
 
     /** Error key for invalid "birthday to" format. */
-    public static final String ERROR_MSG_BIRTHDAY_TO_FORMAT = " error.birthdayTo.format";
+    public static final String ERROR_MSG_BIRTHDAY_TO_FORMAT = "error.birthdayTo.format";
 
     /** Error key for invalid birthday. */
     public static final String ERROR_MSG_BIRTHDAY_INVALID = "error.birthday.invalid";

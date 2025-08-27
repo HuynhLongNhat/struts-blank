@@ -17,6 +17,9 @@
 		<form-bean name="T002Form" type="form.T002Form" />
 		<!--Add/Edit customer form for T003.jsp -->
 		<form-bean name="T003Form" type="form.T003Form" />
+		
+		<form-bean name="T004Form" type="form.T004Form" />
+		
 	</form-beans>
 
     <!-- =========================================
@@ -31,7 +34,8 @@
         <forward name="T002" path="/WEB-INF/jsp/T002.jsp"/>
           <!-- Forward to T003 page -->
         <forward name="T003" path="/WEB-INF/jsp/T003.jsp"/>
-    
+
+	    <forward name="T004" path="/WEB-INF/jsp/T004.jsp" />
     </global-forwards>
 
     <!-- =========================================
@@ -68,6 +72,18 @@
                 parameter="action"
                 validate="true"
                 input="/WEB-INF/jsp/T003.jsp">   
+                <forward name="T001" path="/T001.do" redirect="true"/> 
+                <forward name="T002" path="/T002.do" redirect="true"/> 
+         </action>
+         
+          <action
+                path="/T004"
+                type="action.T004Action"
+                name="T004Form"
+                scope="request"
+                parameter="action"
+                validate="true"
+                input="/WEB-INF/jsp/T004.jsp">   
                <forward name="T001" path="/T001.do" redirect="true"/> 
                 <forward name="T002" path="/T002.do" redirect="true"/> 
          </action>

@@ -110,12 +110,13 @@ body {
 }
 
 .actions {
-	text-align: left;
+	display:flex;
+	justify-content:space-between;
 	margin-top: 20px;
 	margin-bottom: 15px;
 }
 
-.actions .btn-add {
+.actions .action-group input {
 	width: 220px;
 	margin-right: 30px;
 	padding: 4px 0;
@@ -124,10 +125,3 @@ body {
 	border-right: 2px solid #000;
 }
 
-.actions .btn-delete {
-	width: 90px;
-	padding: 4px 0;
-	border: 1px solid #000;
-	border-bottom: 2px solid #000;
-	border-right: 2px solid #000;
-}

@@ -1,0 +1,94 @@
+body {
+	font-family: Arial, sans-serif;
+	background-color: #80ffff;
+	padding-top: 40px;
+}
+
+.blue-bar {
+	background: blue;
+	height: 20px;
+}
+
+.welcome {
+	display: flex;
+	margin-top: 30px;
+	margin-bottom: 20px;
+	justify-content: space-between;
+}
+
+.welcome a {
+	color: #000;
+	margin-left: 15px;
+}
+
+.container {
+	margin: 0 20px;
+}
+
+
+.form-container {
+    width: 400px;
+    margin: 40px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background-color: #fafafa;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+}
+
+.form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+#uploadFile {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.file-hint {
+    margin-left: 10px;
+    color: #888;
+    font-size: 13px;
+    font-style: italic;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+#btnImport,
+#btnCancel {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s ease-in-out;
+}
+
+#btnImport {
+    background-color: #007bff;
+    color: white;
+}
+
+#btnImport:hover {
+    background-color: #0056b3;
+}
+
+#btnCancel {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+#btnCancel:hover {
+    background-color: #bdbdbd;
+}

@@ -34,6 +34,10 @@ public class T001Action extends Action {
 	@Override
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
+		if (Helper.isLogin(request)) {
+			// User already logged in, redirect to T002
+			return mapping.findForward(Constants.T002_SEARCH);
+		} 
 		String action = request.getParameter(Constants.PARAM_ACTION);
 		if (Constants.ACTION_LOGIN.equals(action)) {
 			return getUserLogin(mapping, form, request, response);
@@ -57,14 +61,9 @@ public class T001Action extends Action {
 	 * @throws Exception if any application-level error occurs
 	 */
 	public ActionForward showLoginForm(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		if (Helper.isLogin(request)) {
-			// User already logged in, redirect to T002
-			return mapping.findForward(Constants.T002_SEARCH);
-		} else {
-			// No valid session, show login page
+			HttpServletResponse response) throws Exception {	
+			// Show login page
 			return mapping.findForward(Constants.T001_LOGIN);
-		}
 	}
 
 	/**

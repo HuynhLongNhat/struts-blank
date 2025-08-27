@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import dto.T002Dto;
+import form.T003Form;
 import utils.DBUtils;
 
 /**
@@ -64,7 +65,7 @@ public class T003Dao {
      * @param psnCd    personal code of the user performing the operation
      * @return {@code true} if insert was successful, otherwise {@code false}
      */
-    public void insertCustomer(T002Dto customer, Integer psnCd) throws SQLException {
+    public void insertCustomer(T003Form editForm, Integer psnCd) throws SQLException {
         String sql = "INSERT INTO MSTCUSTOMER (CUSTOMER_ID, CUSTOMER_NAME, SEX, BIRTHDAY, EMAIL, ADDRESS, " +
                      "DELETE_YMD, INSERT_YMD, INSERT_PSN_CD, UPDATE_YMD, UPDATE_PSN_CD) " +
                      "VALUES (NEXT VALUE FOR SEQ_CUSTOMER_ID, ?, ?, ?, ?, ?, NULL, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)";
@@ -72,7 +73,7 @@ public class T003Dao {
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            setCustomerParams(stmt, customer);
+            setCustomerParams(stmt, editForm);
             stmt.setInt(6, psnCd); // INSERT_PSN_CD
             stmt.setInt(7, psnCd); // UPDATE_PSN_CD
 
@@ -83,7 +84,7 @@ public class T003Dao {
     }
 
 
-    public void updateCustomer(T002Dto customer, Integer psnCd) throws SQLException {
+    public void updateCustomer(T003Form editForm, Integer psnCd) throws SQLException {
         String sql = "UPDATE MSTCUSTOMER " +
                      "SET CUSTOMER_NAME = ?, SEX = ?, BIRTHDAY = ?, EMAIL = ?, ADDRESS = ?, " +
                      "DELETE_YMD = NULL, UPDATE_YMD = CURRENT_TIMESTAMP, UPDATE_PSN_CD = ? " +
@@ -92,9 +93,9 @@ public class T003Dao {
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            setCustomerParams(stmt, customer);
+            setCustomerParams(stmt, editForm);
             stmt.setInt(6, psnCd);                   // UPDATE_PSN_CD
-            stmt.setInt(7, customer.getCustomerID()); // WHERE clause
+            stmt.setInt(7, editForm.getCustomerId()); // WHERE clause
 
             stmt.executeUpdate();
         }
@@ -125,11 +126,11 @@ public class T003Dao {
      * @param customer customer data
      * @throws SQLException if setting parameters fails
      */
-    private void setCustomerParams(PreparedStatement stmt, T002Dto customer) throws SQLException {
-        stmt.setString(1, customer.getCustomerName());
-        stmt.setString(2, customer.getSex());
-        stmt.setString(3, customer.getBirthday());
-        stmt.setString(4, customer.getEmail());
-        stmt.setString(5, customer.getAddress());
+    private void setCustomerParams(PreparedStatement stmt, T003Form editForm) throws SQLException {
+        stmt.setString(1, editForm.getCustomerName());
+        stmt.setString(2, editForm.getSex());
+        stmt.setString(3, editForm.getBirthday());
+        stmt.setString(4, editForm.getEmail());
+        stmt.setString(5, editForm.getAddress());
     }
 }

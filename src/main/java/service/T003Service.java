@@ -81,20 +81,12 @@ public class T003Service {
 		}
 	}
 
-	public boolean saveCustomer(T003Form form, HttpServletRequest request, Integer psnCd) {
-		T002Dto customer = new T002Dto();
-		customer.setCustomerID(form.getCustomerId());
-		customer.setCustomerName(form.getCustomerName());
-		customer.setSex(form.getSex());
-		customer.setBirthday(form.getBirthday());
-		customer.setEmail(form.getEmail());
-		customer.setAddress(form.getAddress());
-
+	public boolean saveCustomer(T003Form editForm, HttpServletRequest request, Integer psnCd) {
 		try {
-			if (Constants.MODE_ADD.equals(form.getMode())) {
-				t003Dao.insertCustomer(customer, psnCd);
+			if (Constants.MODE_ADD.equals(editForm.getMode())) {
+				t003Dao.insertCustomer(editForm, psnCd);
 			} else {
-				t003Dao.updateCustomer(customer, psnCd);
+				t003Dao.updateCustomer(editForm, psnCd);
 			}
 			return true;
 		} catch (SQLException e) {

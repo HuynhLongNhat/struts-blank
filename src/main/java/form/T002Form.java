@@ -91,7 +91,8 @@ public class T002Form extends ActionForm {
 
 	/** The total number of pages. */
 	private int totalPages = 1;
-
+    
+	private boolean selectAll;
 	// =========================
 	// Getters and Setters
 	// =========================
@@ -167,6 +168,14 @@ public class T002Form extends ActionForm {
 	public void setTotalPages(int totalPages) {
 		this.totalPages = totalPages;
 	}
+	
+	public boolean isSelectAll() {
+		return selectAll;
+	}
+
+	public void setSelectAll(boolean selectAll) {
+		this.selectAll = selectAll;
+	}
 	// =========================
 	// Validation logic
 	// =========================
@@ -203,6 +212,7 @@ public class T002Form extends ActionForm {
 	}
 
 	private void validateBirthday(ActionErrors errors) {
+		System.out.println("validate birthday");
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 		try {
 			LocalDate from = null;

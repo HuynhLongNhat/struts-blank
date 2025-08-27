@@ -26,6 +26,10 @@ public class T003Action extends MappingDispatchAction {
 	@Override
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
+		// Validate session
+		if (!Helper.isLogin(request)) {
+			return mapping.findForward(Constants.T001_LOGIN);
+		}
 		String action = request.getParameter(Constants.PARAM_ACTION);
 		if (Constants.ACTION_SAVE.equals(action)) {
 			return save(mapping, form, request, response);
@@ -37,9 +41,6 @@ public class T003Action extends MappingDispatchAction {
 	 */
 	public ActionForward load(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 	        HttpServletResponse response) throws Exception {
-	    if (!Helper.isLogin(request)) {
-	    	  return mapping.findForward(Constants.T001_LOGIN);
-	    }  
 	    T003Form t003Form = (T003Form) form;
 	    t003Service.getCustomerById(t003Form, request);
 	    return mapping.findForward(Constants.T003_EDIT);
@@ -50,9 +51,6 @@ public class T003Action extends MappingDispatchAction {
 	 */
 	public ActionForward save(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 	                           HttpServletResponse response) throws Exception {
-	    if (!Helper.isLogin(request)) {
-	    	  return mapping.findForward(Constants.T001_LOGIN);
-	    }
 	    T003Form t003Form = (T003Form) form;
 	    HttpSession session = request.getSession(false);
 		T001Dto loggedInUser = (T001Dto) session.getAttribute(Constants.SESSION_USER);

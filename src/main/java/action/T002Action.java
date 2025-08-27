@@ -4,13 +4,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.actions.MappingDispatchAction;
 
 import common.Constants;
-
 import form.T002Form;
 import service.T002Service;
 import utils.Helper;
@@ -23,7 +23,7 @@ import utils.Helper;
  * being mapped to different request parameters.
  * </p>
  */
-public class T002Action extends MappingDispatchAction {
+public class T002Action extends Action {
 
 	/** Service layer instance for customer operations */
 	private final T002Service t002Service = T002Service.getInstance();
@@ -32,6 +32,10 @@ public class T002Action extends MappingDispatchAction {
 	@Override
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
+		// Validate session
+		if (!Helper.isLogin(request)) {
+			return mapping.findForward(Constants.T001_LOGIN);
+		}
 		String action = request.getParameter(Constants.PARAM_ACTION);
 		if (action == null) {
 	        return findCustomer(mapping, form, request, response);
@@ -41,6 +45,8 @@ public class T002Action extends MappingDispatchAction {
             return deleteCustomer(mapping, form, request, response);
         case Constants.ACTION_SEARCH:
             return findCustomer(mapping, form, request, response);
+        case Constants.ACTION_EXPORT:
+            return exportCSV(mapping, form, request, response);
         default:
             // Nếu action không hợp lệ thì cũng có thể cho về search
             return findCustomer(mapping, form, request, response);
@@ -76,15 +82,28 @@ public class T002Action extends MappingDispatchAction {
 	 */
 	private ActionForward findCustomer(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-		// Validate session
-		if (!Helper.isLogin(request)) {
-			return mapping.findForward(Constants.T001_LOGIN);
-		}
 		 HttpSession session = request.getSession();
 		 T002Form t002Form = (T002Form) form;
 		 t002Service.searchCustomers(t002Form, request, session);
 	     return mapping.findForward(Constants.T002_SEARCH);
 	}
+	
+	 /**
+     * Exports customer data to CSV file based on search conditions.
+     *
+     * @param mapping  The ActionMapping used to select this instance.
+     * @param form     The ActionForm bean containing search criteria.
+     * @param request  The HTTP request we are processing.
+     * @param response The HTTP response we are creating.
+     * @return null as the response is directly written to output stream.
+     * @throws Exception If an application-level error occurs.
+     */
+    public ActionForward exportCSV(ActionMapping mapping, ActionForm form, HttpServletRequest request,
+            HttpServletResponse response) throws Exception {
+        T002Form t002Form = (T002Form) form;
+        t002Service.exportCustomersToCSV(t002Form, request, response);
+        return null; // Response is already committed
+    }
 
 	
 }
