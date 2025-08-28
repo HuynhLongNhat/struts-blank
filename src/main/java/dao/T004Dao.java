@@ -1,118 +1,143 @@
 package dao;
 
-import org.apache.struts.upload.FormFile;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.sql.SQLException;
+import java.util.List;
+
+import dto.T002Dto;
+import utils.DBUtils;
 
 public class T004Dao {
 
-    private Connection getConnection() throws Exception {
-        // TODO: Implement your database connection logic
-        // Example:
-        // Class.forName("your.database.driver");
-        // return DriverManager.getConnection("jdbc:url", "username", "password");
-        return null;
-    }
+    public boolean checkCustomerExists(int customerId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM MSTCUSTOMER WHERE CUSTOMER_ID = ? AND DELETE_YMD IS NULL";
 
-    public boolean checkCustomerExists(String customerId) {
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-        ResultSet rs = null;
-        
-        try {
-            conn = getConnection();
-            String sql = "SELECT COUNT(*) FROM MSTCUSTOMER WHERE CUSTOMER_ID = ? AND DELETE_YMD IS NULL";
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, customerId);
-            rs = pstmt.executeQuery();
-            
-            if (rs.next()) {
-                return rs.getInt(1) > 0;
+        try (Connection conn = DBUtils.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, customerId);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            // Close resources
-            try { if (rs != null) rs.close(); } catch (Exception e) {}
-            try { if (pstmt != null) pstmt.close(); } catch (Exception e) {}
-            try { if (conn != null) conn.close(); } catch (Exception e) {}
         }
-        
+
         return false;
     }
 
-    public boolean importData(FormFile uploadFile) {
+    public boolean importCustomerData(List<T002Dto> customers) throws SQLException {
         Connection conn = null;
-        PreparedStatement pstmt = null;
-        BufferedReader reader = null;
-        
+        PreparedStatement insertStmt = null;
+        PreparedStatement updateStmt = null;
+
         try {
-            conn = getConnection();
-            conn.setAutoCommit(false);
-            
-            String sql = "INSERT INTO MSTCUSTOMER (CUSTOMER_ID, CUSTOMER_NAME, SEX, BIRTHDAY, EMAIL, INSERT_YMD) VALUES (?, ?, ?, ?, ?, SYSDATE)";
-            pstmt = conn.prepareStatement(sql);
-            
-            reader = new BufferedReader(new InputStreamReader(uploadFile.getInputStream()));
-            String line;
-            int lineNumber = 0;
-            
-            while ((line = reader.readLine()) != null) {
-                lineNumber++;
-                
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
-                
-                String[] values = line.split(",");
-                if (values.length < 5) {
-                    continue;
-                }
-                
-                String customerId = values[0].trim();
-                String customerName = values[1].trim();
-                String sex = values[2].trim();
-                String birthday = values[3].trim();
-                String email = values[4].trim();
-                
-                pstmt.setString(1, customerId);
-                pstmt.setString(2, customerName);
-                pstmt.setString(3, sex);
-                pstmt.setString(4, birthday);
-                pstmt.setString(5, email);
-                pstmt.addBatch();
-                
-                // Execute batch every 100 records
-                if (lineNumber % 100 == 0) {
-                    pstmt.executeBatch();
+            conn = DBUtils.getInstance().getConnection();
+            conn.setAutoCommit(false); // Start transaction
+
+            // Prepare SQL statements
+            String insertSql = "INSERT INTO MSTCUSTOMER " +
+                    "(CUSTOMER_ID, CUSTOMER_NAME, SEX, BIRTHDAY, EMAIL, ADDRESS, DELETE_YMD, INSERT_YMD, INSERT_PSN_CD, UPDATE_YMD, UPDATE_PSN_CD) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, NULL, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)";
+
+            String updateSql = "UPDATE MSTCUSTOMER " +
+                    "SET CUSTOMER_NAME = ?, SEX = ?, BIRTHDAY = ?, EMAIL = ?, ADDRESS = ?, " +
+                    "UPDATE_YMD = CURRENT_TIMESTAMP, UPDATE_PSN_CD = ? " +
+                    "WHERE CUSTOMER_ID = ?";
+
+            insertStmt = conn.prepareStatement(insertSql);
+            updateStmt = conn.prepareStatement(updateSql);
+
+            int insertCount = 0;
+            int updateCount = 0;
+
+            for (T002Dto customer : customers) {
+                if (customer.getCustomerID() == 0) {
+                    // Insert new customer with auto-generated ID
+                    String newCustomerId = generateNewCustomerId(conn);
+                    insertStmt.setInt(1, Integer.parseInt(newCustomerId));
+                    insertStmt.setString(2, customer.getCustomerName());
+                    insertStmt.setString(3, customer.getSex());
+                    insertStmt.setDate(4, java.sql.Date.valueOf(customer.getBirthday().replace("/", "-")));
+                    insertStmt.setString(5, customer.getEmail());
+                    insertStmt.setString(6, customer.getAddress());
+                    insertStmt.setString(7, "SYSTEM"); // INSERT_PSN_CD
+                    insertStmt.setString(8, "SYSTEM"); // UPDATE_PSN_CD
+                    insertStmt.addBatch();
+                    insertCount++;
+                } else {
+                    // Update existing customer
+                    updateStmt.setString(1, customer.getCustomerName());
+                    updateStmt.setString(2, customer.getSex());
+                    updateStmt.setDate(3, java.sql.Date.valueOf(customer.getBirthday().replace("/", "-")));
+                    updateStmt.setString(4, customer.getEmail());
+                    updateStmt.setString(5, customer.getAddress());
+                    updateStmt.setString(6, "SYSTEM"); // UPDATE_PSN_CD
+                    updateStmt.setInt(7, customer.getCustomerID());
+                    updateStmt.addBatch();
+                    updateCount++;
                 }
             }
-            
-            // Execute remaining batch
-            pstmt.executeBatch();
-            conn.commit();
-            
+
+            // Execute batch operations
+            if (insertCount > 0) {
+                insertStmt.executeBatch();
+            }
+            if (updateCount > 0) {
+                updateStmt.executeBatch();
+            }
+
+            conn.commit(); // Commit transaction
+
+            // Log the results
+            System.out.println("Import completed successfully:");
+            System.out.println("Inserted line(s): " + insertCount);
+            System.out.println("Updated line(s): " + updateCount);
+
             return true;
-        } catch (Exception e) {
-            try {
-                if (conn != null) {
-                    conn.rollback();
+
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback(); // Rollback on error
+                } catch (SQLException rollbackEx) {
+                    System.err.println("Error during rollback: " + rollbackEx.getMessage());
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
-            e.printStackTrace();
+            System.err.println("Error during import: " + e.getMessage());
+            throw e;
         } finally {
             // Close resources
-            try { if (reader != null) reader.close(); } catch (Exception e) {}
-            try { if (pstmt != null) pstmt.close(); } catch (Exception e) {}
-            try { if (conn != null) conn.close(); } catch (Exception e) {}
+            if (insertStmt != null) {
+                try { insertStmt.close(); } catch (SQLException e) { /* ignore */ }
+            }
+            if (updateStmt != null) {
+                try { updateStmt.close(); } catch (SQLException e) { /* ignore */ }
+            }
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true); // Reset auto-commit
+                    conn.close();
+                } catch (SQLException e) { /* ignore */ }
+            }
         }
-        
-        return false;
+    }
+
+    private String generateNewCustomerId(Connection conn) throws SQLException {
+        String sql = "SELECT MAX(CAST(CUSTOMER_ID AS INTEGER)) FROM MSTCUSTOMER WHERE CUSTOMER_ID REGEXP '^[0-9]+$'";
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+
+            if (rs.next()) {
+                int maxId = rs.getInt(1);
+                return String.valueOf(maxId + 1);
+            }
+        }
+
+        return "1"; // Default if no numeric IDs found
     }
 }

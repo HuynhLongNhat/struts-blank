@@ -81,7 +81,6 @@
                 type="action.T004Action"
                 name="T004Form"
                 scope="request"
-                parameter="action"
                 validate="true"
                 input="/WEB-INF/jsp/T004.jsp">   
                <forward name="T001" path="/T001.do" redirect="true"/> 

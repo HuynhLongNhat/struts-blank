@@ -145,18 +145,18 @@ public class T002Service {
     }
     
     /**
-     * Exports customer data to CSV file based on search conditions.
-     *
-     * @param form     The {@link T002Form} containing input search criteria.
-     * @param request  The {@link HttpServletRequest} used to retrieve parameters.
-     * @param response The {@link HttpServletResponse} used to write CSV output.
-     * @throws SQLException if any database error occurs during the search.
-     * @throws IOException  if writing to response output stream fails.
-     */
-    public void exportCustomersToCSV(T002Form form, HttpServletRequest request, HttpServletResponse response) 
-            throws SQLException, IOException {
+    * Exports customer data to CSV file based on search conditions.
+    *
+    * @param form The {@link T002Form} containing input search criteria.
+    * @param request The {@link HttpServletRequest} used to retrieve parameters.
+    * @param response The {@link HttpServletResponse} used to write CSV output.
+    * @throws SQLException if any database error occurs during the search.
+    * @throws IOException if writing to response output stream fails.
+    */
+    public void exportCustomersToCSV(T002Form form, HttpServletRequest request, HttpServletResponse response)
+    throws SQLException, IOException {
         HttpSession session = request.getSession();
-        
+
         // Retrieve SCO from session or create new one based on form data
         T002SCO sco = (T002SCO) session.getAttribute(Constants.SESSION_T002_SCO);
         if (sco == null) {
@@ -166,11 +166,11 @@ public class T002Service {
             sco.setBirthdayFrom(form.getBirthdayFrom());
             sco.setBirthdayTo(form.getBirthdayTo());
         }
-        
+
         // Get all records without pagination
         Map<String, Object> data = t002Dao.searchCustomers(sco, 0, Integer.MAX_VALUE);
         Object customersObj = data.get("customers");
-        
+
         List<T002Dto> customers;
         if (customersObj instanceof List) {
             customers = ((List<?>) customersObj).stream()
@@ -180,45 +180,33 @@ public class T002Service {
         } else {
             customers = Collections.emptyList();
         }
-        
+
         // Set response headers for CSV download
         String fileName = "Customer_" + new SimpleDateFormat("yyyyMMdd").format(new Date(0)) + ".csv";
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
         response.setCharacterEncoding("UTF-8");
-        
-        // Write CSV content
+
         try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8))) {
-            // Write header
+            // Thêm BOM để Excel đọc đúng UTF-8
+            writer.write('\ufeff');
+
+            // Write header with quotes
             writer.println("\"Customer Id\",\"Customer Name\",\"Sex\",\"Birthday\",\"Email\",\"Address\"");
-            
-            // Write data rows
+
+            // Write data rows with quotes but no escaping
             for (T002Dto customer : customers) {
                 String customerId = String.valueOf(customer.getCustomerID());
-                String customerName = escapeCsvField(customer.getCustomerName());
-                String sex = customer.getSex(); // Đã được format trong DAO
-                String birthday = customer.getBirthday() != null ? customer.getBirthday() : ""; // Giữ nguyên định dạng từ DB
-                String email = escapeCsvField(customer.getEmail());
-                String address = escapeCsvField(customer.getAddress());
-                
-                writer.println(String.format("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"",
-                        customerId, customerName, sex, birthday, email, address));
+                String customerName = customer.getCustomerName() != null ? customer.getCustomerName() : "";
+                String sex = customer.getSex() != null ? customer.getSex() : "";
+                String birthday = customer.getBirthday() != null ? customer.getBirthday() : "";
+                String email = customer.getEmail() != null ? customer.getEmail() : "";
+                String address = customer.getAddress() != null ? customer.getAddress() : "";
+
+                // CSV format with quotes but no escaping
+                writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
+                        customerId, customerName, sex, birthday, email, address);
             }
         }
     }
-    
-    /**
-     * Escapes special characters in CSV fields.
-     *
-     * @param field the field value to escape
-     * @return the escaped field value
-     */
-    private String escapeCsvField(String field) {
-        if (field == null) {
-            return "";
-        }
-        // Escape quotes by doubling them
-        return field.replace("\"", "\"\"");
-    }
-    
 }

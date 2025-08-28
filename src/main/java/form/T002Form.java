@@ -15,34 +15,6 @@ import common.Constants;
 import utils.Helper;
 
 /**
- * Form bean for the T002 screen (Customer Search).
- * <p>
- * This class captures user input for customer search criteria, selected
- * customer IDs, and pagination data for listing results.
- * </p>
- *
- * <p>
- * <b>Main responsibilities:</b>
- * </p>
- * <ul>
- * <li>Bind search criteria fields from the JSP (name, gender, birthday
- * range).</li>
- * <li>Capture selected customer IDs for bulk actions (e.g., delete).</li>
- * <li>Maintain pagination state (current page, total pages, etc.) for
- * consistent navigation.</li>
- * <li>Provide input validation logic for date formats and birthday ranges.</li>
- * </ul>
- *
- * <p>
- * <b>Pagination fields:</b>
- * </p>
- * <ul>
- * <li>{@code currentPage} - The currently displayed page number.</li>
- * <li>{@code prevPage} - The previous page number for navigation.</li>
- * <li>{@code nextPage} - The next page number for navigation.</li>
- * <li>{@code totalPages} - The total number of pages calculated from search
- * results.</li>
- * </ul>
  *
  * @author YourName
  * @version 1.1
@@ -212,7 +184,6 @@ public class T002Form extends ActionForm {
 	}
 
 	private void validateBirthday(ActionErrors errors) {
-		System.out.println("validate birthday");
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 		try {
 			LocalDate from = null;

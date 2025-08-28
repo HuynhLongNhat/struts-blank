@@ -1,5 +1,7 @@
 package action;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -7,12 +9,13 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
+import org.apache.struts.action.ActionMessages;
 
 import common.Constants;
 import form.T004Form;
 import service.T004Service;
 import utils.Helper;
-import java.util.List;
 
 public class T004Action extends Action {
 
@@ -39,16 +42,35 @@ public class T004Action extends Action {
     private ActionForward processImport(ActionMapping mapping, T004Form form, HttpServletRequest request) throws Exception {
         try {
             List<String> errors = t004Service.validateAndImportFile(form.getUploadFile());
-            
+
             if (errors != null && !errors.isEmpty()) {
-                request.setAttribute("errorMessages", errors);
+                // Gộp list lỗi thành một chuỗi, mỗi lỗi xuống dòng
+                String allErrors = String.join("\\n", errors);
+
+                ActionMessages actionErrors = new ActionMessages();
+                actionErrors.add(
+                    ActionMessages.GLOBAL_MESSAGE,
+                    new ActionMessage("error.import.message", allErrors)
+                );
+                saveErrors(request, actionErrors);
             } else {
-                request.setAttribute("successMessage", "Import completed successfully!");
+                ActionMessages messages = new ActionMessages();
+                messages.add(
+                    ActionMessages.GLOBAL_MESSAGE,
+                    new ActionMessage("success.import.completed")
+                );
+                saveMessages(request, messages);
             }
         } catch (Exception e) {
-            request.setAttribute("errorMessage", e.getMessage());
+            ActionMessages actionErrors = new ActionMessages();
+            actionErrors.add(
+                ActionMessages.GLOBAL_MESSAGE,
+                new ActionMessage("error.import.exception", e.getMessage())
+            );
+            saveErrors(request, actionErrors);
         }
-        
+
         return mapping.findForward(Constants.T004_IMPORT);
     }
+
 }

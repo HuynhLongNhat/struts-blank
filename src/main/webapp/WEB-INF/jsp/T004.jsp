@@ -159,7 +159,10 @@ body {
 		</div>
 
 		<div class="blue-bar"></div>
-
+        <div id="errorMessages" style="display: none">
+			<html:errors />
+		</div>
+        
 		<div class="form-container">
 			<html:form action="/T004" method="post" enctype="multipart/form-data" styleId="customerForm">
 				<html:hidden property="action" value="import"/>
@@ -193,6 +196,6 @@ body {
 			document.getElementById("fileName").textContent = fileName;
 		}
 	</script>
-	<script src="<%=request.getContextPath()%>/WebContent/js/T003.js?ts=<%=System.currentTimeMillis()%>"></script>
+	<script src="<%=request.getContextPath()%>/WebContent/js/T004.js?ts=<%=System.currentTimeMillis()%>"></script>
 </body>
 </html>

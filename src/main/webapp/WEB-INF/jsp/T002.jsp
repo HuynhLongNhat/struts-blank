@@ -2,14 +2,13 @@
 <%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%>
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page import="form.T002Form"%>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title><bean:message key="label.searchCustomer" /></title>
-
-<!-- CSS (vẫn giữ WebContent nhưng bỏ bớt rườm rà, thêm version tránh cache) -->
 <html:base />
 <link rel="stylesheet" type="text/css"
 	href="<%=request.getContextPath()%>/WebContent/css/T002.css?v=<%=System.currentTimeMillis()%>" />
@@ -53,16 +52,18 @@
 					property="customerName" styleId="txtCustomerName" />
 			</label>
 
-			<label> <bean:message key="label.sex" /> <html:select
-					property="sex" styleId="cboSex">
-					<html:option value="" />
-					<html:option value="0">
-						<bean:message key="label.male" />
-					</html:option>
-					<html:option value="1">
-						<bean:message key="label.female" />
-					</html:option>
-				</html:select>
+			<label> <bean:message key="label.sex" /> <span
+				class="sex-select"> <html:select property="sex"
+						styleId="cboSex">
+						<html:option value="" />
+						<html:option value="0">
+							<bean:message key="label.male" />
+						</html:option>
+						<html:option value="1">
+							<bean:message key="label.female" />
+						</html:option>
+					</html:select>
+			</span>
 			</label>
 
 			<label> <bean:message key="label.birthday" /> <html:text
@@ -77,64 +78,68 @@
 
 		<!-- Pagination -->
 		<div class="btn-pagination">
-			<logic:notEmpty name="customers">
-				<div class="previous">
-					<logic:equal name="disableFirst" value="true">
-						<html:button property="first" disabled="true">&lt;&lt;</html:button>
-					</logic:equal>
-					<logic:notEqual name="disableFirst" value="true">
-						<html:form action="/T002" method="post" style="display:inline;">
-							<input type="hidden" name="currentPage" value="1" />
-							<html:submit>&lt;&lt;</html:submit>
-						</html:form>
-					</logic:notEqual>
+    <div class="previous">
+        <c:choose>
+            <c:when test="${disableFirst}">
+                <html:button property="first" disabled="true">&lt;&lt;</html:button>
+            </c:when>
+            <c:otherwise>
+                <html:form action="/T002" method="post" style="display:inline;">
+                    <html:hidden property="currentPage" value="1" />
+                    <html:submit>&lt;&lt;</html:submit>
+                </html:form>
+            </c:otherwise>
+        </c:choose>
 
-					<logic:equal name="disablePrevious" value="true">
-						<html:button property="prev" disabled="true">&lt;</html:button>
-					</logic:equal>
-					<logic:notEqual name="disablePrevious" value="true">
-						<html:form action="/T002" method="post" style="display:inline;">
-							<input type="hidden" name="currentPage"
-								value="<bean:write name='T002Form' property='prevPage'/>" />
-							<html:submit>&lt;</html:submit>
-						</html:form>
-					</logic:notEqual>
-				</div>
+        <c:choose>
+            <c:when test="${disablePrevious}">
+                <html:button property="prev" disabled="true">&lt;</html:button>
+            </c:when>
+            <c:otherwise>
+                <html:form action="/T002" method="post" style="display:inline;">
+                    <html:hidden property="currentPage" value="${T002Form.prevPage}" />
+                    <html:submit>&lt;</html:submit>
+                </html:form>
+            </c:otherwise>
+        </c:choose>
+    </div>
 
-				<div class="next">
-					<logic:equal name="disableNext" value="true">
-						<html:button property="next" disabled="true">&gt;</html:button>
-					</logic:equal>
-					<logic:notEqual name="disableNext" value="true">
-						<html:form action="/T002" method="post" style="display:inline;">
-							<input type="hidden" name="currentPage"
-								value="<bean:write name='T002Form' property='nextPage'/>" />
-							<html:submit>&gt;</html:submit>
-						</html:form>
-					</logic:notEqual>
+    <div class="next">
+        <c:choose>
+            <c:when test="${disableNext}">
+                <html:button property="next" disabled="true">&gt;</html:button>
+            </c:when>
+            <c:otherwise>
+                <html:form action="/T002" method="post" style="display:inline;">
+                    <html:hidden property="currentPage" value="${T002Form.nextPage}" />
+                    <html:submit>&gt;</html:submit>
+                </html:form>
+            </c:otherwise>
+        </c:choose>
 
-					<logic:equal name="disableLast" value="true">
-						<html:button property="last" disabled="true">&gt;&gt;</html:button>
-					</logic:equal>
-					<logic:notEqual name="disableLast" value="true">
-						<html:form action="/T002" method="post" style="display:inline;">
-							<input type="hidden" name="currentPage"
-								value="<bean:write name='T002Form' property='totalPages'/>" />
-							<html:submit>&gt;&gt;</html:submit>
-						</html:form>
-					</logic:notEqual>
-				</div>
-			</logic:notEmpty>
-		</div>
+        <c:choose>
+            <c:when test="${disableLast}">
+                <html:button property="last" disabled="true">&gt;&gt;</html:button>
+            </c:when>
+            <c:otherwise>
+                <html:form action="/T002" method="get" style="display:inline;">
+                    <html:hidden property="currentPage" value="${T002Form.totalPages}" />
+                    <html:submit>&gt;&gt;</html:submit>
+                </html:form>
+            </c:otherwise>
+        </c:choose>
+    </div>
+</div>
 
 
 		<!-- Customer List -->
 		<html:form action="/T002" method="post">
-		<html:hidden property="action" styleId="actionHidden" value="" />
 			<table class="customer-table">
 				<thead>
 					<tr>
-						<th><html:checkbox property="selectAll" styleId="chkAll" /></th>
+						<th><label class="custom-checkbox"> <html:checkbox
+									property="selectAll" styleId="chkAll" /> <span></span>
+						</label></th>
 						<th><bean:message key="label.customerId" /></th>
 						<th><bean:message key="label.customerName" /></th>
 						<th><bean:message key="label.sex" /></th>
@@ -146,9 +151,12 @@
 					<logic:notEmpty name="customers">
 						<logic:iterate id="customer" name="customers" type="dto.T002Dto">
 							<tr>
-								<td><html:multibox property="customerIds">
-										<bean:write name="customer" property="customerID" />
-									</html:multibox></td>
+								<td><label class="custom-checkbox"> <html:multibox
+											property="customerIds"
+											value='<bean:write name="customer" property="customerID"/>' />
+										<span></span>
+								</label></td>
+
 								<td><html:link page="/T003.do" paramId="customerId"
 										paramName="customer" paramProperty="customerID">
 										<bean:write name="customer" property="customerID" />
@@ -173,10 +181,12 @@
 
 					<!-- Delete -->
 					<logic:notEmpty name="customers">
-						<html:button property="btnDelete" styleId="btnDelete"
-							onclick="document.getElementById('actionHidden').value='remove'; this.form.submit();">
-							<bean:message key="label.delete" />
-						</html:button>
+						<html:form action="/T002" method="post">
+							<html:hidden property="action" value="remove" />
+							<html:submit property="btnDelete" styleId="btnDelete">
+								<bean:message key="label.delete" />
+							</html:submit>
+						</html:form>
 					</logic:notEmpty>
 					<logic:empty name="customers">
 						<html:button property="btnDelete" styleId="btnDelete"
@@ -185,19 +195,17 @@
 						</html:button>
 					</logic:empty>
 				</div>
-
 				<div class="action-group">
 					<!-- Export -->
-					<html:button property="btnExport" styleId="btnExport"
-						onclick="document.getElementById('actionHidden').value='export'; this.form.submit();">
-						<bean:message key="button.export" />
-					</html:button>
-
-
+					<html:form action="/T002" method="post" style="display:inline;">
+						<html:hidden property="action" value="export" />
+						<html:submit property="btnExport" styleId="btnExport">
+							<bean:message key="button.export" />
+						</html:submit>
+					</html:form>
 					<!-- Import -->
 					<html:button property="btnImport" styleId="btnImport"
-					  onclick="redirectToExportPage();"
-					>
+						onclick="redirectToExportPage();">
 						<bean:message key="button.import" />
 					</html:button>
 				</div>
@@ -212,11 +220,19 @@
 
 		</html:form>
 	</div>
-
+	<script src="<%=request.getContextPath()%>/WebContent/js/T002.js?ts=<%=System.currentTimeMillis()%>"></script>
 	<%@ include file="Footer.jsp"%>
 
 	<!-- JS -->
-	<script
-		src="<%=request.getContextPath()%>/WebContent/js/T002.js?v=<%=System.currentTimeMillis()%>"></script>
+	
+	<script>
+		function redirectToEditPage() {
+			window.location.href = '/Struts-blank/T003.do';
+		}
+
+		function redirectToExportPage() {
+			window.location.href = '/Struts-blank/T004.do';
+		}
+	</script>
 </body>
 </html>
