@@ -1,10 +1,14 @@
 package dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import dto.T002Dto;
 import utils.DBUtils;
@@ -12,132 +16,175 @@ import utils.DBUtils;
 public class T004Dao {
 
     public boolean checkCustomerExists(int customerId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM MSTCUSTOMER WHERE CUSTOMER_ID = ? AND DELETE_YMD IS NULL";
-
+    	StringBuilder stringBuilder = new StringBuilder();
+    	stringBuilder.append("SELECT COUNT(*) FROM MSTCUSTOMER ");
+    	stringBuilder.append("WHERE CUSTOMER_ID = ? ");
+    	stringBuilder.append("AND DELETE_YMD IS NULL");
+        String sql = stringBuilder.toString();
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
             pstmt.setInt(1, customerId);
-
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
                 }
             }
         }
-
         return false;
     }
-
-    public boolean importCustomerData(List<T002Dto> customers) throws SQLException {
+    public Map<String, List<Integer>> importCustomerData(List<T002Dto> customers, Integer psnCd) throws SQLException {
         Connection conn = null;
         PreparedStatement insertStmt = null;
         PreparedStatement updateStmt = null;
+        PreparedStatement checkStmt = null;
+
+        // Map kết quả trả về
+        Map<String, List<Integer>> resultMap = new HashMap<>();
+        List<Integer> insertedIndexes = new ArrayList<>();
+        List<Integer> updatedIndexes = new ArrayList<>();
 
         try {
             conn = DBUtils.getInstance().getConnection();
-            conn.setAutoCommit(false); // Start transaction
+            conn.setAutoCommit(false);
 
-            // Prepare SQL statements
             String insertSql = "INSERT INTO MSTCUSTOMER " +
                     "(CUSTOMER_ID, CUSTOMER_NAME, SEX, BIRTHDAY, EMAIL, ADDRESS, DELETE_YMD, INSERT_YMD, INSERT_PSN_CD, UPDATE_YMD, UPDATE_PSN_CD) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, NULL, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)";
+                    "VALUES (NEXT VALUE FOR SEQ_CUSTOMER_ID, ?, ?, ?, ?, ?, NULL, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)";
 
-            String updateSql = "UPDATE MSTCUSTOMER " +
-                    "SET CUSTOMER_NAME = ?, SEX = ?, BIRTHDAY = ?, EMAIL = ?, ADDRESS = ?, " +
+            String updateSql = "UPDATE MSTCUSTOMER SET " +
+                    "CUSTOMER_NAME = ?, SEX = ?, BIRTHDAY = ?, EMAIL = ?, ADDRESS = ?, " +
                     "UPDATE_YMD = CURRENT_TIMESTAMP, UPDATE_PSN_CD = ? " +
                     "WHERE CUSTOMER_ID = ?";
 
+            String checkExistingSql = "SELECT CUSTOMER_NAME, SEX, BIRTHDAY, EMAIL, ADDRESS FROM MSTCUSTOMER WHERE CUSTOMER_ID = ? AND DELETE_YMD IS NULL";
+
             insertStmt = conn.prepareStatement(insertSql);
             updateStmt = conn.prepareStatement(updateSql);
+            checkStmt = conn.prepareStatement(checkExistingSql);
 
-            int insertCount = 0;
-            int updateCount = 0;
+            for (int i = 0; i < customers.size(); i++) {
+                T002Dto customer = customers.get(i);
 
-            for (T002Dto customer : customers) {
+                // Convert sex string to numeric
+                int sexValue = mapSex(customer.getSex());
+
                 if (customer.getCustomerID() == 0) {
-                    // Insert new customer with auto-generated ID
-                    String newCustomerId = generateNewCustomerId(conn);
-                    insertStmt.setInt(1, Integer.parseInt(newCustomerId));
-                    insertStmt.setString(2, customer.getCustomerName());
-                    insertStmt.setString(3, customer.getSex());
-                    insertStmt.setDate(4, java.sql.Date.valueOf(customer.getBirthday().replace("/", "-")));
-                    insertStmt.setString(5, customer.getEmail());
-                    insertStmt.setString(6, customer.getAddress());
-                    insertStmt.setString(7, "SYSTEM"); // INSERT_PSN_CD
-                    insertStmt.setString(8, "SYSTEM"); // UPDATE_PSN_CD
+                    // Insert new customer
+                    prepareInsertStatement(insertStmt, customer, sexValue, psnCd);
                     insertStmt.addBatch();
-                    insertCount++;
+                    insertedIndexes.add(i + 1); // index dòng (1-based)
                 } else {
-                    // Update existing customer
-                    updateStmt.setString(1, customer.getCustomerName());
-                    updateStmt.setString(2, customer.getSex());
-                    updateStmt.setDate(3, java.sql.Date.valueOf(customer.getBirthday().replace("/", "-")));
-                    updateStmt.setString(4, customer.getEmail());
-                    updateStmt.setString(5, customer.getAddress());
-                    updateStmt.setString(6, "SYSTEM"); // UPDATE_PSN_CD
-                    updateStmt.setInt(7, customer.getCustomerID());
-                    updateStmt.addBatch();
-                    updateCount++;
+                    // Check if update is needed (only update if data has changed)
+                    if (isUpdateNeeded(checkStmt, customer, sexValue)) {
+                        prepareUpdateStatement(updateStmt, customer, sexValue, psnCd);
+                        updateStmt.addBatch();
+                        updatedIndexes.add(i + 1); // index dòng (1-based)
+                    }
                 }
             }
 
-            // Execute batch operations
-            if (insertCount > 0) {
-                insertStmt.executeBatch();
-            }
-            if (updateCount > 0) {
-                updateStmt.executeBatch();
-            }
+            if (!insertedIndexes.isEmpty()) insertStmt.executeBatch();
+            if (!updatedIndexes.isEmpty()) updateStmt.executeBatch();
 
-            conn.commit(); // Commit transaction
+            conn.commit();
 
-            // Log the results
-            System.out.println("Import completed successfully:");
-            System.out.println("Inserted line(s): " + insertCount);
-            System.out.println("Updated line(s): " + updateCount);
+            // Gán vào map trả về
+            resultMap.put("inserted", insertedIndexes);
+            resultMap.put("updated", updatedIndexes);
 
-            return true;
+            return resultMap;
 
         } catch (SQLException e) {
             if (conn != null) {
-                try {
-                    conn.rollback(); // Rollback on error
-                } catch (SQLException rollbackEx) {
-                    System.err.println("Error during rollback: " + rollbackEx.getMessage());
+                try { 
+                    conn.rollback(); 
+                } catch (SQLException rollbackEx) { 
+                    System.err.println("Rollback error: " + rollbackEx.getMessage()); 
                 }
             }
-            System.err.println("Error during import: " + e.getMessage());
             throw e;
         } finally {
-            // Close resources
-            if (insertStmt != null) {
-                try { insertStmt.close(); } catch (SQLException e) { /* ignore */ }
-            }
-            if (updateStmt != null) {
-                try { updateStmt.close(); } catch (SQLException e) { /* ignore */ }
-            }
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true); // Reset auto-commit
-                    conn.close();
-                } catch (SQLException e) { /* ignore */ }
-            }
+            closeResource(insertStmt);
+            closeResource(updateStmt);
+            closeResource(checkStmt);
+            closeConnection(conn);
         }
     }
 
-    private String generateNewCustomerId(Connection conn) throws SQLException {
-        String sql = "SELECT MAX(CAST(CUSTOMER_ID AS INTEGER)) FROM MSTCUSTOMER WHERE CUSTOMER_ID REGEXP '^[0-9]+$'";
+    private void prepareInsertStatement(PreparedStatement stmt, T002Dto customer, int sexValue, Integer psnCd) throws SQLException {
+        stmt.setString(1, customer.getCustomerName());
+        stmt.setInt(2, sexValue);
+        stmt.setString(3, customer.getBirthday());
+        stmt.setString(4, customer.getEmail());
+        stmt.setString(5, customer.getAddress());
+        stmt.setInt(6, psnCd); 
+        stmt.setInt(7, psnCd); 
+    }
 
-        try (PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
+    private void prepareUpdateStatement(PreparedStatement stmt, T002Dto customer, int sexValue, Integer psnCd) throws SQLException {
+        stmt.setString(1, customer.getCustomerName());
+        stmt.setInt(2, sexValue);
+        stmt.setString(3, customer.getBirthday());
+        stmt.setString(4, customer.getEmail());
+        stmt.setString(5, customer.getAddress());
+        stmt.setInt(6, psnCd); // UPDATE_PSN_CD
+        stmt.setInt(7, customer.getCustomerID());
+    }
 
+    private boolean isUpdateNeeded(PreparedStatement checkStmt, T002Dto newCustomer, int newSexValue) throws SQLException {
+        checkStmt.setInt(1, newCustomer.getCustomerID());
+        
+        try (ResultSet rs = checkStmt.executeQuery()) {
             if (rs.next()) {
-                int maxId = rs.getInt(1);
-                return String.valueOf(maxId + 1);
+                String existingName = rs.getString("CUSTOMER_NAME");
+                int existingSex = rs.getInt("SEX");
+                Date existingBirthday = rs.getDate("BIRTHDAY");
+                String existingEmail = rs.getString("EMAIL");
+                String existingAddress = rs.getString("ADDRESS");
+                
+                // Convert dates to comparable format
+                java.sql.Date newBirthday = java.sql.Date.valueOf(newCustomer.getBirthday().replace("/", "-"));
+                
+                // Check if any field has changed
+                boolean nameChanged = !existingName.equals(newCustomer.getCustomerName());
+                boolean sexChanged = existingSex != newSexValue;
+                boolean birthdayChanged = !existingBirthday.equals(newBirthday);
+                boolean emailChanged = !existingEmail.equals(newCustomer.getEmail());
+                boolean addressChanged = !existingAddress.equals(newCustomer.getAddress());
+                
+                return nameChanged || sexChanged || birthdayChanged || emailChanged || addressChanged;
             }
         }
-
-        return "1"; // Default if no numeric IDs found
+        
+        // If customer not found, should update to handle potential data inconsistency
+        return true;
     }
+
+    private void closeResource(AutoCloseable resource) {
+        if (resource != null) {
+            try { 
+                resource.close(); 
+            } catch (Exception e) { 
+                // Log at debug level if needed
+            }
+        }
+    }
+
+    private void closeConnection(Connection conn) {
+        if (conn != null) {
+            try {
+                conn.setAutoCommit(true);
+                conn.close();
+            } catch (SQLException e) { 
+                // Log at debug level if needed
+            }
+        }
+    }
+    
+    private int mapSex(String sex) {
+        if ("Male".equalsIgnoreCase(sex)) return 0;
+        if ("Female".equalsIgnoreCase(sex)) return 1;
+        throw new IllegalArgumentException("Invalid sex value: " + sex);
+    }
+
 }

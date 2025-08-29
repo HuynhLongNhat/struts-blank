@@ -1,7 +1,14 @@
 package utils;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.regex.Pattern;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import common.Constants;
 
 /**
  * Helper - Utility class providing common helper methods used across the
@@ -30,5 +37,30 @@ public class Helper {
 	    return session != null && session.getAttribute("user") != null;
 	}
 
+	/**
+     * Check if birthday is valid format yyyy/MM/dd
+     */
+    public static boolean isValidDate(String dateStr) {
+        if (isEmpty(dateStr)) {
+            return false;
+        }
+        try {       
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.DATE_PATTERN);
+            LocalDate.parse(dateStr.trim(), formatter);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+    
+    /**
+     * Check if email is valid format
+     */
+    public static boolean isValidEmail(String email) {
+        if (isEmpty(email)) {
+            return false;
+        }
+        return Pattern.compile(Constants.EMAIL_REGEX).matcher(email).matches();
+    }
 
 }

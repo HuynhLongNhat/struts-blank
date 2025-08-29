@@ -3,186 +3,239 @@ package service;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 import org.apache.struts.upload.FormFile;
 
 import dao.T004Dao;
 import dto.T002Dto;
+import utils.Helper;
 
 public class T004Service {
 
-    private T004Dao t004DAO = new T004Dao();
+	private static final int MAX_CUSTOMER_NAME_LENGTH = 50;
+	private static final int MAX_ADDRESS_LENGTH = 256;
+	private static final String MALE = "Male";
+	private static final String FEMALE = "Female";
 
-    public List<String> validateAndImportFile(FormFile uploadFile) throws Exception {
-        List<String> errors = new ArrayList<>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(uploadFile.getInputStream(), "UTF-8"));
-        String line;
-        int lineNumber = 0;
-        List<T002Dto> validCustomers = new ArrayList<>();
+	private final T004Dao t004Dao;
 
-        try {
-            while ((line = reader.readLine()) != null) {
-                lineNumber++;
+	// Constructor injection for better testability
+	public T004Service() {
+		this.t004Dao = new T004Dao();
+	}
 
-                // Skip empty lines
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
+	public T004Service(T004Dao t004Dao) {
+		this.t004Dao = t004Dao;
+	}
 
-                // Process CSV line
-                String[] values = parseCSVLine(line);
+	public List<String> importFile(FormFile uploadFile , Integer psnCd) throws Exception {
+		List<String> errors = new ArrayList<>();
+		List<T002Dto> validCustomers = new ArrayList<>();
 
-                // Validate minimum number of columns
-                if (values.length < 6) {
-                    errors.add("Line " + lineNumber + ": Invalid format - not enough columns");
-                    continue;
-                }
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(uploadFile.getInputStream(), "UTF-8"))) {
 
-                String customerIdStr = values[0].trim();
-                String customerName = values[1].trim();
-                String sex = values[2].trim();
-                String birthday = values[3].trim();
-                String email = values[4].trim();
-                String address = values.length > 5 ? values[5].trim() : "";
+			processCsvFile(reader, errors, validCustomers);
+		}
+		return handleImportResults(errors, validCustomers, psnCd);
+	}
 
-                // Validate each field
-                List<String> lineErrors = validateCustomerData(customerIdStr, customerName, sex, birthday, email,
-                        address, lineNumber);
-                errors.addAll(lineErrors);
+	private void processCsvFile(BufferedReader reader, List<String> errors, List<T002Dto> validCustomers)
+			throws Exception {
+		String line;
+		int lineNumber = 0;
 
-                // If no errors for this line, add to valid customers list
-                if (lineErrors.isEmpty()) {
-                    T002Dto customer = new T002Dto();
-                    
-                    // Set customer ID (0 for new customers)
-                    int customerId = 0;
-                    if (!customerIdStr.isEmpty()) {
-                        customerId = Integer.parseInt(customerIdStr);
-                    }
-                    
-                    customer.setCustomerID(customerId);
-                    customer.setCustomerName(customerName);
-                    customer.setSex(sex);
-                    customer.setBirthday(birthday);
-                    customer.setEmail(email);
-                    customer.setAddress(address);
-                    validCustomers.add(customer);
-                }
-            }
-        } finally {
-            reader.close();
-        }
+		while ((line = reader.readLine()) != null) {
+			lineNumber++;
 
-        // If there are validation errors, return them
-        if (!errors.isEmpty()) {
-            return errors;
-        }
+			if (shouldSkipLine(lineNumber, line)) {
+				continue;
+			}
+			processCsvLine(line, lineNumber, errors, validCustomers);
+		}
+	}
 
-        // If no errors, proceed with import
-        boolean importSuccess = t004DAO.importCustomerData(validCustomers);
+	private boolean shouldSkipLine(int lineNumber, String line) {
+		return lineNumber == 1 || line.trim().isEmpty();
+	}
 
-        if (!importSuccess) {
-            throw new Exception("Import failed due to system error.");
-        }
+	private void processCsvLine(String line, int lineNumber, List<String> errors, List<T002Dto> validCustomers)
+			throws SQLException {
+		String[] values = parseCsvLine(line);
 
-        return null;
-    }
+		CustomerData customerData = extractCustomerData(values);
+		List<String> lineErrors = validateCustomerData(customerData, lineNumber);
 
-    private String[] parseCSVLine(String line) {
-        List<String> result = new ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder currentField = new StringBuilder();
+		if (lineErrors.isEmpty()) {
+			validCustomers.add(createCustomerDto(customerData));
+		} else {
+			errors.addAll(lineErrors);
+		}
+	}
 
-        for (int i = 0; i < line.length(); i++) {
-            char c = line.charAt(i);
+	private CustomerData extractCustomerData(String[] values) {
+		return new CustomerData(values[0].trim(), values[1].trim(),
+				                values[2].trim(), values[3].trim().replaceFirst("^=", ""),
+				                values[4].trim(), values[5].trim());
+	}
 
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                result.add(currentField.toString());
-                currentField = new StringBuilder();
-            } else {
-                currentField.append(c);
-            }
-        }
-        result.add(currentField.toString());
+	private T002Dto createCustomerDto(CustomerData data) {
+		T002Dto customer = new T002Dto();
 
-        return result.toArray(new String[0]);
-    }
+		int customerId = 0;
+		if (!data.customerIdStr.isEmpty()) {
+			customerId = Integer.parseInt(data.customerIdStr);
+		}
 
-    private List<String> validateCustomerData(String customerIdStr, String customerName, String sex, String birthday,
-            String email, String address, int lineNumber) throws SQLException {
-        List<String> errors = new ArrayList<>();
-        // Validate customer ID - chỉ validate nếu có giá trị
-        if (!customerIdStr.isEmpty()) {
-        	System.out.println("customer :"+ customerIdStr);
-                int customerId = Integer.parseInt(customerIdStr);
-                boolean customerExists = t004DAO.checkCustomerExists(customerId);
-                if (!customerExists) {
-                    errors.add("Line " + lineNumber + ": CUSTOMER_ID=" + customerId + " is not existed");
-                }   
-        }
+		customer.setCustomerID(customerId);
+		customer.setCustomerName(data.customerName);
+		customer.setSex(data.sex);
+		customer.setBirthday(data.birthday);
+		customer.setEmail(data.email);
+		customer.setAddress(data.address);
 
-        // Validate customer name
-        if (customerName.isEmpty()) {
-            errors.add("Line " + lineNumber + ": CUSTOMER_NAME is empty");
-        } else if (customerName.length() > 50) {
-            errors.add("Line " + lineNumber + ": Value of CUSTOMER_NAME is more than 50 characters");
-        }
+		return customer;
+	}
 
-        // Validate sex
-        if (!sex.equalsIgnoreCase("Male") && !sex.equalsIgnoreCase("Female")) {
-            errors.add("Line " + lineNumber + ": SEX=" + sex + " is invalid");
-        }
+	private List<String> handleImportResults(List<String> errors, List<T002Dto> validCustomers, Integer psnCd) throws Exception {
+	    List<String> results = new ArrayList<>();
 
-        // Validate birthday
-        if (!isValidDate(birthday)) {
-            errors.add("Line " + lineNumber + ": BIRTHDAY=" + birthday + " is invalid");
-        }
+	    if (!errors.isEmpty()) {
+	        return errors; // Trả về lỗi nếu có
+	    }
 
-        // Validate email
-        if (!isValidEmail(email)) {
-            errors.add("Line " + lineNumber + ": EMAIL=" + email + " is invalid");
-        }
+	    if (validCustomers.isEmpty()) {
+	        throw new Exception("No valid customer data to import");
+	    }
 
-        return errors;
-    }
+	    // DAO trả về danh sách dòng insert/update
+	    Map<String, List<Integer>> result = t004Dao.importCustomerData(validCustomers, psnCd);
 
-    private boolean isValidDate(String dateStr) {
-        if (dateStr == null || dateStr.isEmpty()) {
-            return false;
-        }
-        
-        // Check format YYYY/MM/DD
-        if (!dateStr.matches("\\d{4}/\\d{2}/\\d{2}")) {
-            return false;
-        }
+	    if (result == null || result.isEmpty()) {
+	        throw new Exception("Import failed due to system error.");
+	    }
 
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-            sdf.setLenient(false); // Strict validation
-            Date date = sdf.parse(dateStr);
-            
-            // Additional check to ensure the parsed date matches the input
-            String formatted = sdf.format(date);
-            return formatted.equals(dateStr);
-        } catch (Exception e) {
-            return false;
-        }
-    }
+	    List<Integer> insertedLines = result.getOrDefault("inserted", new ArrayList<>());
+	    List<Integer> updatedLines = result.getOrDefault("updated", new ArrayList<>());
 
-    private boolean isValidEmail(String email) {
-        if (email == null || email.isEmpty()) {
-            return false;
-        }
+	    results.add("Customer data have been imported successfully.");
+	    results.add("Inserted line(s): " + (insertedLines.isEmpty() ? "None" : joinIntegers(insertedLines)));
+	    results.add("Updated line(s): " + (updatedLines.isEmpty() ? "None" : joinIntegers(updatedLines)));
 
-        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-        Pattern pattern = Pattern.compile(emailRegex);
-        return pattern.matcher(email).matches();
-    }
+	    return results;
+	}
+
+	private String joinIntegers(List<Integer> list) {
+	    StringBuilder sb = new StringBuilder();
+	    for (int i = 0; i < list.size(); i++) {
+	        sb.append(list.get(i));
+	        if (i < list.size() - 1) {
+	            sb.append(", ");
+	        }
+	    }
+	    return sb.toString();
+	}
+
+	private String[] parseCsvLine(String line) {
+		List<String> result = new ArrayList<>();
+		boolean inQuotes = false;
+		StringBuilder currentField = new StringBuilder();
+
+		for (int i = 0; i < line.length(); i++) {
+			char c = line.charAt(i);
+
+			if (c == '"') {
+				inQuotes = !inQuotes;
+			} else if (c == ',' && !inQuotes) {
+				result.add(currentField.toString());
+				currentField = new StringBuilder();
+			} else {
+				currentField.append(c);
+			}
+		}
+		result.add(currentField.toString());
+
+		return result.toArray(new String[0]);
+	}
+
+	private List<String> validateCustomerData(CustomerData data, int lineNumber) throws SQLException {
+		List<String> errors = new ArrayList<>();
+
+		validateCustomerId(data.customerIdStr, lineNumber, errors);
+		validateCustomerName(data.customerName, lineNumber, errors);
+		validateSex(data.sex, lineNumber, errors);
+		validateBirthday(data.birthday, lineNumber, errors);
+		validateEmail(data.email, lineNumber, errors);
+		validateAddress(data.address, lineNumber, errors);
+
+		return errors;
+	}
+
+	private void validateCustomerId(String customerIdStr, int lineNumber, List<String> errors) throws SQLException {
+		if (!customerIdStr.isEmpty()) {
+			try {
+				int customerId = Integer.parseInt(customerIdStr);
+				boolean customerExists = t004Dao.checkCustomerExists(customerId);
+				if (!customerExists) {
+					errors.add("Line " + lineNumber + ": CUSTOMER_ID=" + customerId + " is not existed");
+				}
+			} catch (NumberFormatException e) {
+				errors.add("Line " + lineNumber + ": CUSTOMER_ID=" + customerIdStr + " is not a valid number");
+			}
+		}
+	}
+
+	private void validateCustomerName(String customerName, int lineNumber, List<String> errors) {
+		if (customerName.isEmpty()) {
+			errors.add("Line " + lineNumber + ": CUSTOMER_NAME is empty");
+		} else if (customerName.length() > MAX_CUSTOMER_NAME_LENGTH) {
+			errors.add("Line " + lineNumber + ": Value of CUSTOMER_NAME is more than " + MAX_CUSTOMER_NAME_LENGTH
+					+ " characters");
+		}
+	}
+
+	private void validateSex(String sex, int lineNumber, List<String> errors) {
+		if (!sex.equalsIgnoreCase(MALE) && !sex.equalsIgnoreCase(FEMALE)) {
+			errors.add("Line " + lineNumber + ": SEX=" + sex + " is invalid");
+		}
+	}
+
+	private void validateBirthday(String birthday, int lineNumber, List<String> errors) {
+		if (!Helper.isValidDate(birthday)) {
+			errors.add("Line " + lineNumber + ": BIRTHDAY=" + birthday + " is invalid");
+		}
+	}
+
+	private void validateEmail(String email, int lineNumber, List<String> errors) {
+		if (!Helper.isValidEmail(email)) {
+			errors.add("Line " + lineNumber + ": EMAIL=" + email + " is invalid");
+		}
+	}
+	private void validateAddress(String address, int lineNumber, List<String> errors) {
+		if (address.length() > MAX_ADDRESS_LENGTH) {
+			errors.add("Line " + lineNumber + ": Value of ADDRESS is more than " + MAX_ADDRESS_LENGTH + " characters");
+		}
+	}
+
+	// Helper record to hold customer data
+	private static class CustomerData {
+		final String customerIdStr;
+		final String customerName;
+		final String sex;
+		final String birthday;
+		final String email;
+		final String address;
+
+		CustomerData(String customerIdStr, String customerName, String sex, String birthday, String email,
+				String address) {
+			this.customerIdStr = customerIdStr;
+			this.customerName = customerName;
+			this.sex = sex;
+			this.birthday = birthday;
+			this.email = email;
+			this.address = address;
+		}
+	}
 }

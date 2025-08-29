@@ -97,16 +97,16 @@ public class Constants {
     public static final String PRAM_CUSTOMERS = "customers";
 
     /** Request parameter key to disable the "First" pagination button. */
-    public static final String PRAM_DISABLE_FIRST = "disableFirst";
+    public static final String PRAM_DISABLE_FIRST = "disabledFirst";
 
     /** Request parameter key to disable the "Previous" pagination button. */
-    public static final String PRAM_DISABLE_PREV = "disablePrevious";
+    public static final String PRAM_DISABLE_PREV = "disabledPrevious";
 
     /** Request parameter key to disable the "Next" pagination button. */
-    public static final String PRAM_DISABLE_NEXT = "disableNext";
+    public static final String PRAM_DISABLE_NEXT = "disabledNext";
 
     /** Request parameter key to disable the "Last" pagination button. */
-    public static final String PRAM_DISABLE_LAST = "disableLast";
+    public static final String PRAM_DISABLE_LAST = "disabledLast";
 
     // ============================================================
     // Error message keys (for validation and i18n resource bundles)
@@ -138,4 +138,8 @@ public class Constants {
 
     /** Error key for invalid email format. */
     public static final String ERROR_MSG_EMAIL_INVALID = "error.email.invalid";
+    
+    public static final String DATE_PATTERN = "yyyy/MM/dd";
+    
+    public static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
 }

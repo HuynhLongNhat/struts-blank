@@ -58,7 +58,6 @@ public class T003Service {
 	 */
 	public void getCustomerById(T003Form form, HttpServletRequest request) {
 		int customerId = form.getCustomerId();
-
 		if (customerId != 0) {
 			try {
 				T002Dto customer = t003Dao.getCustomerById(customerId);

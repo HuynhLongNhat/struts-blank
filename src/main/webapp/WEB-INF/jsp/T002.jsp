@@ -2,7 +2,7 @@
 <%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%>
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core"  prefix="c" %>
 <%@ page import="form.T002Form"%>
 <!DOCTYPE html>
 <html>
@@ -17,7 +17,9 @@
 <body>
 
 	<%@ include file="Header.jsp"%>
-
+     <%
+    T002Form searchForm = (T002Form) request.getAttribute("T002Form");
+%>
 	<div class="container">
 		<!-- Navigation -->
 		<div class="nav-group">
@@ -77,61 +79,81 @@
 		</html:form>
 
 		<!-- Pagination -->
-		<div class="btn-pagination">
+<div class="btn-pagination">
     <div class="previous">
-        <c:choose>
-            <c:when test="${disableFirst}">
-                <html:button property="first" disabled="true">&lt;&lt;</html:button>
-            </c:when>
-            <c:otherwise>
+        <!-- Button First -->
+        <logic:empty name="customers">
+            <html:button property="btnFirst" styleId="btnFirst" disabled="true">&lt;&lt;</html:button>
+        </logic:empty>
+        <logic:notEmpty name="customers">
+            <logic:equal name="disabledFirst" value="true">
+                <html:button property="btnFirst" styleId="btnFirst" disabled="true">&lt;&lt;</html:button>
+            </logic:equal>
+            <logic:notEqual name="disabledFirst" value="true">
                 <html:form action="/T002" method="post" style="display:inline;">
+                    <html:hidden property="action" value="search"/>
                     <html:hidden property="currentPage" value="1" />
                     <html:submit>&lt;&lt;</html:submit>
                 </html:form>
-            </c:otherwise>
-        </c:choose>
+            </logic:notEqual>
+        </logic:notEmpty>
 
-        <c:choose>
-            <c:when test="${disablePrevious}">
-                <html:button property="prev" disabled="true">&lt;</html:button>
-            </c:when>
-            <c:otherwise>
+        <!-- Button Previous -->
+        <logic:empty name="customers">
+            <html:button property="btnPrevious" styleId="btnPrevious" disabled="true">&lt;</html:button>
+        </logic:empty>
+        <logic:notEmpty name="customers">
+            <logic:equal name="disabledPrevious" value="true">
+                <html:button property="btnPrevious" styleId="btnPrevious" disabled="true">&lt;</html:button>
+            </logic:equal>
+            <logic:notEqual name="disabledPrevious" value="true">
                 <html:form action="/T002" method="post" style="display:inline;">
-                    <html:hidden property="currentPage" value="${T002Form.prevPage}" />
+                    <html:hidden property="action" value="search"/>
+                    <html:hidden property="currentPage" value="<%= String.valueOf(searchForm.getPrevPage()) %>" />
                     <html:submit>&lt;</html:submit>
                 </html:form>
-            </c:otherwise>
-        </c:choose>
+            </logic:notEqual>
+        </logic:notEmpty>
     </div>
 
     <div class="next">
-        <c:choose>
-            <c:when test="${disableNext}">
-                <html:button property="next" disabled="true">&gt;</html:button>
-            </c:when>
-            <c:otherwise>
+        <!-- Button Next -->
+        <logic:empty name="customers">
+            <html:button property="btnNext" styleId="btnNext" disabled="true">&gt;</html:button>
+        </logic:empty>
+        <logic:notEmpty name="customers">
+            <logic:equal name="disabledNext" value="true">
+                <html:button property="btnNext" styleId="btnNext" disabled="true">&gt;</html:button>
+            </logic:equal>
+            <logic:notEqual name="disabledNext" value="true">
                 <html:form action="/T002" method="post" style="display:inline;">
-                    <html:hidden property="currentPage" value="${T002Form.nextPage}" />
+                    <html:hidden property="action" value="search"/>
+                    <html:hidden property="currentPage" value="<%= String.valueOf(searchForm.getNextPage()) %>" />
                     <html:submit>&gt;</html:submit>
                 </html:form>
-            </c:otherwise>
-        </c:choose>
+            </logic:notEqual>
+        </logic:notEmpty>
 
-        <c:choose>
-            <c:when test="${disableLast}">
-                <html:button property="last" disabled="true">&gt;&gt;</html:button>
-            </c:when>
-            <c:otherwise>
-                <html:form action="/T002" method="get" style="display:inline;">
-                    <html:hidden property="currentPage" value="${T002Form.totalPages}" />
+        <!-- Button Last -->
+        <logic:empty name="customers">
+            <html:button property="btnLast" styleId="btnLast" disabled="true">&gt;&gt;</html:button>
+        </logic:empty>
+        <logic:notEmpty name="customers">
+            <logic:equal name="disabledLast" value="true">
+                <html:button property="btnLast" styleId="btnLast" disabled="true">&gt;&gt;</html:button>
+            </logic:equal>
+            <logic:notEqual name="disabledLast" value="true">
+                <html:form action="/T002" method="post" style="display:inline;">
+                    <html:hidden property="action" value="search"/>
+                    <html:hidden property="currentPage" value="<%= String.valueOf(searchForm.getTotalPages()) %>" />
                     <html:submit>&gt;&gt;</html:submit>
                 </html:form>
-            </c:otherwise>
-        </c:choose>
+            </logic:notEqual>
+        </logic:notEmpty>
     </div>
 </div>
 
-
+	
 		<!-- Customer List -->
 		<html:form action="/T002" method="post">
 			<table class="customer-table">

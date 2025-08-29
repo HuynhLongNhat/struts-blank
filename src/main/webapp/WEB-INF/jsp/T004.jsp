@@ -183,7 +183,9 @@ body {
 						Import
 					</html:submit>
 
-					<html:reset styleId="btnCancel">Cancel</html:reset>
+					<html:button styleId="btnCancel" property="btnCancel"
+						onclick="window.location.href='/Struts-blank/T002.do';">Cancel</html:button>
+
 				</div>
 			</html:form>
 		</div>

@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -13,6 +14,7 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 
 import common.Constants;
+import dto.T001Dto;
 import form.T004Form;
 import service.T004Service;
 import utils.Helper;
@@ -39,38 +41,33 @@ public class T004Action extends Action {
         return mapping.findForward(Constants.T004_IMPORT);
     }
 
-    private ActionForward processImport(ActionMapping mapping, T004Form form, HttpServletRequest request) throws Exception {
-        try {
-            List<String> errors = t004Service.validateAndImportFile(form.getUploadFile());
+    private ActionForward processImport(ActionMapping mapping, T004Form form, HttpServletRequest request)
+            throws Exception {        
+        HttpSession session = request.getSession(false);
+        T001Dto loggedInUser = (T001Dto) session.getAttribute(Constants.SESSION_USER);
+        Integer psnCd = (loggedInUser != null) ? loggedInUser.getPsnCd() : null;
 
-            if (errors != null && !errors.isEmpty()) {
-                // Gộp list lỗi thành một chuỗi, mỗi lỗi xuống dòng
-                String allErrors = String.join("\\n", errors);
+        List<String> results = t004Service.importFile(form.getUploadFile(), psnCd);
 
-                ActionMessages actionErrors = new ActionMessages();
-                actionErrors.add(
-                    ActionMessages.GLOBAL_MESSAGE,
-                    new ActionMessage("error.import.message", allErrors)
-                );
-                saveErrors(request, actionErrors);
-            } else {
+        if (results != null && !results.isEmpty()) {
+            // Nếu phần tử đầu tiên chứa "Customer data have been imported successfully." 
+            // thì coi là thành công
+            if (results.get(0).startsWith("Customer data have been imported successfully")) {
+                String successMessage = String.join("\n", results);
                 ActionMessages messages = new ActionMessages();
-                messages.add(
-                    ActionMessages.GLOBAL_MESSAGE,
-                    new ActionMessage("success.import.completed")
-                );
+                messages.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("success.import.completed", successMessage));
                 saveMessages(request, messages);
+            } else {
+                // Trường hợp lỗi
+                String allErrors = String.join("\n", results);
+                ActionMessages actionErrors = new ActionMessages();
+                actionErrors.add(ActionMessages.GLOBAL_MESSAGE, new ActionMessage("error.import.message", allErrors));
+                saveErrors(request, actionErrors);
             }
-        } catch (Exception e) {
-            ActionMessages actionErrors = new ActionMessages();
-            actionErrors.add(
-                ActionMessages.GLOBAL_MESSAGE,
-                new ActionMessage("error.import.exception", e.getMessage())
-            );
-            saveErrors(request, actionErrors);
         }
 
         return mapping.findForward(Constants.T004_IMPORT);
     }
+
 
 }

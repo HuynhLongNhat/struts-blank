@@ -9,9 +9,6 @@ import common.Constants;
 import utils.Helper;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 
 /**
  * Struts Form bean for T003 screen. Holds customer data and performs
@@ -93,30 +90,15 @@ public class T003Form extends ActionForm {
 		ActionErrors errors = new ActionErrors();
 		String action = request.getParameter(Constants.PARAM_ACTION);
 		if (Constants.ACTION_SAVE.equals(action)) {
-			// Birthday validation
-			if (Helper.isEmpty(birthday)) {
-				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_BIRTHDAY_INVALID));
-				return errors;
-			} else {
-				try {
-					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-					LocalDate.parse(birthday.trim(), formatter);
-				} catch (DateTimeParseException e) {
-					errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_BIRTHDAY_INVALID));
-					return errors;
-				}
-			}
-			// Email validation
-			if (Helper.isEmpty(email)) {
-				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_EMAIL_INVALID));
-				return errors;
-			} else {
-				String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
-				if (!email.matches(emailRegex)) {
-					errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_EMAIL_INVALID));
-					return errors;
-				}
-			}
+			 if (!Helper.isValidDate(birthday)) {
+		            errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_BIRTHDAY_INVALID));
+		            return errors;
+		        }
+		        // Email validation
+		        if (!Helper.isValidEmail(email)) {
+		            errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_EMAIL_INVALID));
+		            return errors;
+		        }
 		}
 		return errors;
 	}
