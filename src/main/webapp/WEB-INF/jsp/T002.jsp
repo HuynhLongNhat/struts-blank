@@ -2,7 +2,6 @@
 <%@ taglib uri="http://struts.apache.org/tags-html" prefix="html"%>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean"%>
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core"  prefix="c" %>
 <%@ page import="form.T002Form"%>
 <!DOCTYPE html>
 <html>
@@ -174,9 +173,9 @@
 						<logic:iterate id="customer" name="customers" type="dto.T002Dto">
 							<tr>
 								<td><label class="custom-checkbox"> <html:multibox
-											property="customerIds"
-											value='<bean:write name="customer" property="customerID"/>' />
-										<span></span>
+											property="customerIds">
+											<bean:write name="customer" property="customerID" />
+										</html:multibox> <span></span>
 								</label></td>
 
 								<td><html:link page="/T003.do" paramId="customerId"
@@ -234,7 +233,9 @@
 
 				<div class="action-group">
 					<!-- Setting Header -->
-					<html:button property="btnSettingHeader" styleId="btnSettingHeader">
+					<html:button property="btnSettingHeader" styleId="btnSettingHeader"
+					onclick="window.location.href='/Struts-blank/T005.do';"
+					>
 						<bean:message key="button.settingHeader" />
 					</html:button>
 				</div>

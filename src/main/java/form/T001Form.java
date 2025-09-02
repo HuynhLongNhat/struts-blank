@@ -139,11 +139,11 @@ public class T001Form extends ActionForm {
 			if (Helper.isEmpty(userId)) {
 				errors.add(
 						Constants.GLOBAL,
-						new ActionMessage(Constants.ERROR_MSG_USER_ID_REQUIRED));
+						new ActionMessage(Constants.ERROR_USER_ID_REQUIRED));
 			} else if (Helper.isEmpty(password)) {
 				errors.add(
 						Constants.GLOBAL,
-						new ActionMessage(Constants.ERROR_MSG_PASSWORD_REQUIRED));
+						new ActionMessage(Constants.ERROR_PASSWORD_REQUIRED));
 			}
 		}
 		return errors;

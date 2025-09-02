@@ -65,6 +65,8 @@ public class T002Form extends ActionForm {
 	private int totalPages = 1;
     
 	private boolean selectAll;
+	
+	private String action ;
 	// =========================
 	// Getters and Setters
 	// =========================
@@ -148,6 +150,15 @@ public class T002Form extends ActionForm {
 	public void setSelectAll(boolean selectAll) {
 		this.selectAll = selectAll;
 	}
+	
+	public String getAction() {
+		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
+	}
+	
 	// =========================
 	// Validation logic
 	// =========================
@@ -171,7 +182,7 @@ public class T002Form extends ActionForm {
 	@Override
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
-		String action = request.getParameter(Constants.PARAM_ACTION);
+		String action = getAction();
 		if (Constants.ACTION_REMOVE.equals(action)) {
 			if (customerIds == null || customerIds.length == 0) {
 				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_CUSTOMER_ID_REQUIRED));
@@ -196,15 +207,17 @@ public class T002Form extends ActionForm {
 				to = LocalDate.parse(birthdayTo.trim(), formatter);
 			}
 			if (from != null && to != null && to.isBefore(from)) {
-				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_BIRTHDAY_RANGE));
+				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_BIRTHDAY_RANGE));
 			}
 		} catch (DateTimeParseException e) {
 			if (e.getParsedString().equals(birthdayFrom)) {
-				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_BIRTHDAY_FROM_FORMAT));
+				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_BIRTHDAY_FROM_FORMAT));
 			} else {
-				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_BIRTHDAY_TO_FORMAT));
+				errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_BIRTHDAY_TO_FORMAT));
 			}
 		}
 	}
+
+	
 
 }

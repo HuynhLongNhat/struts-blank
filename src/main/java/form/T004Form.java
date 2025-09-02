@@ -1,14 +1,17 @@
 package form;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.upload.FormFile;
 
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
+import common.Constants;
 
 public class T004Form extends ActionForm {
     private static final long serialVersionUID = 1L;
@@ -40,45 +43,35 @@ public class T004Form extends ActionForm {
     @Override
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
-        String action = getAction();
-
-        if ("import".equals(action)) {
-            // 1. Check file exist
+        String action = getAction();  
+        if (Constants.ACTION_IMPORT.equals(action)) {
+            // 1. Check file existence
             if (uploadFile == null || uploadFile.getFileSize() == 0) {
-                errors.add("uploadFile", new ActionMessage("error.import.notExisted"));
+                errors.add("uploadFile", new ActionMessage(Constants.ERROR_IMPORT_NOT_EXISTED));
                 return errors;
             }
-
             String fileName = uploadFile.getFileName();
-
             // 2. Check extension .csv
-            if (fileName == null || !fileName.toLowerCase().endsWith(".csv")) {
-                errors.add("uploadFile", new ActionMessage("error.import.invalid"));
+            if (fileName == null || !fileName.toLowerCase().endsWith(".csv")) {             
+                errors.add("uploadFile", new ActionMessage(Constants.ERROR_IMPORT_INVALID));
                 return errors;
             }
-
-            // 3. Check file size or content empty
             // 3. Check file content
-            try {
+            try {            	
                 byte[] fileData = uploadFile.getFileData();
-                // case file rỗng hoặc null
-                if (fileData == null || fileData.length == 0) {
-                    errors.add("uploadFile", new ActionMessage("error.import.empty"));
+                if (fileData == null || fileData.length == 0) {               
+                    errors.add(Constants.GLOBAL, new ActionMessage("error.import.empty"));
                     return errors;
                 }
-                String content = new String(fileData, "UTF-8").trim();
+                String content = new String(fileData, StandardCharsets.UTF_8).trim();
                 if (content.isEmpty()) {
-                    errors.add("uploadFile", new ActionMessage("error.import.empty"));
+                    errors.add(Constants.GLOBAL, new ActionMessage("error.import.empty"));
                     return errors;
                 }
-
             } catch (IOException e) {
-                e.printStackTrace();
-                errors.add("uploadFile", new ActionMessage("error.import.empty"));
-                return errors;
+            	  throw new RuntimeException("Error while reading uploaded file", e);
             }
         }
-
         return errors;
     }
 

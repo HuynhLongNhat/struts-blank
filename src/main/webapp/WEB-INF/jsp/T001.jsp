@@ -24,7 +24,7 @@
 			<html:errors  />
 		</label>
 		<!-- Form Struts -->
-		<html:form action="/T001" method="post">
+		<html:form action="/T001" method="post" acceptCharset="UTF-8">
 		  <html:hidden property="action" value="login"/>
 			<div class="input-group">
 				<label for="txtuserID"> <bean:message key="label.userId" />
@@ -51,12 +51,5 @@
 	</div>
 	<%@ include file="Footer.jsp"%>
 	<script src="<%=request.getContextPath()%>/WebContent/js/T001.js?ts=<%=System.currentTimeMillis()%>"></script>
-	<script>
-	function clearFormFields() {
-	    document.getElementById('txtuserID').value = '';
-	    document.getElementById('txtpassword').value = '';
-	    document.getElementById('lblErrorMessage').textContent = '';
-	}
-</script>
 </body>
 </html>

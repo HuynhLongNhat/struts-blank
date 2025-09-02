@@ -91,12 +91,12 @@ public class T003Form extends ActionForm {
 		String action = request.getParameter(Constants.PARAM_ACTION);
 		if (Constants.ACTION_SAVE.equals(action)) {
 			 if (!Helper.isValidDate(birthday)) {
-		            errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_BIRTHDAY_INVALID));
+		            errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_BIRTHDAY_INVALID));
 		            return errors;
 		        }
 		        // Email validation
 		        if (!Helper.isValidEmail(email)) {
-		            errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_EMAIL_INVALID));
+		            errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_EMAIL_INVALID));
 		            return errors;
 		        }
 		}

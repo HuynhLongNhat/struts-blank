@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import common.TableConstants;
 import dto.T002Dto;
 import form.T003Form;
 import utils.DBUtils;
@@ -13,6 +14,11 @@ import utils.DBUtils;
  * Data Access Object (DAO) for handling operations on {@code MSTCUSTOMER}.
  * <p>
  * Provides methods to retrieve, insert, and update customer records.
+ * </p>
+ *
+ * <p>
+ * Implements the Singleton pattern to ensure only one instance is used
+ * throughout the application lifecycle.
  * </p>
  */
 public class T003Dao {
@@ -39,17 +45,26 @@ public class T003Dao {
      * @return a {@link T002Dto} object if found, otherwise {@code null}
      */
     public T002Dto getCustomerById(Integer customerId) {
-        String sql = "SELECT CUSTOMER_ID, CUSTOMER_NAME, SEX, BIRTHDAY, EMAIL, ADDRESS " +
-                     "FROM MSTCUSTOMER WHERE CUSTOMER_ID = ? AND DELETE_YMD IS NULL";
+        StringBuilder sql = new StringBuilder()
+            .append("SELECT ")
+            .append(TableConstants.CUST_CUSTOMER_ID).append(", ")
+            .append(TableConstants.CUST_CUSTOMER_NAME).append(", ")
+            .append(TableConstants.CUST_SEX).append(", ")
+            .append(TableConstants.CUST_BIRTHDAY).append(", ")
+            .append(TableConstants.CUST_EMAIL).append(", ")
+            .append(TableConstants.CUST_ADDRESS)
+            .append(" FROM ").append(TableConstants.TABLE_MSTCUSTOMER)
+            .append(" WHERE ").append(TableConstants.CUST_CUSTOMER_ID).append(" = ?")
+            .append(" AND ").append(TableConstants.CUST_DELETE_YMD).append(" IS NULL");
 
         try (Connection conn = DBUtils.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
 
             stmt.setInt(1, customerId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return mapRow(rs); // map ResultSet row to DTO
+                    return mapRow(rs); // Map ResultSet row to DTO
                 }
             }
         } catch (SQLException e) {
@@ -61,40 +76,63 @@ public class T003Dao {
     /**
      * Inserts a new customer record.
      *
-     * @param customer customer data to insert
+     * @param editForm customer data to insert
      * @param psnCd    personal code of the user performing the operation
-     * @return {@code true} if insert was successful, otherwise {@code false}
+     * @throws SQLException if insert fails
      */
     public void insertCustomer(T003Form editForm, Integer psnCd) throws SQLException {
-        String sql = "INSERT INTO MSTCUSTOMER (CUSTOMER_ID, CUSTOMER_NAME, SEX, BIRTHDAY, EMAIL, ADDRESS, " +
-                     "DELETE_YMD, INSERT_YMD, INSERT_PSN_CD, UPDATE_YMD, UPDATE_PSN_CD) " +
-                     "VALUES (NEXT VALUE FOR SEQ_CUSTOMER_ID, ?, ?, ?, ?, ?, NULL, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)";
+        StringBuilder sql = new StringBuilder()
+            .append("INSERT INTO ").append(TableConstants.TABLE_MSTCUSTOMER).append(" (")
+            .append(TableConstants.CUST_CUSTOMER_ID).append(", ")
+            .append(TableConstants.CUST_CUSTOMER_NAME).append(", ")
+            .append(TableConstants.CUST_SEX).append(", ")
+            .append(TableConstants.CUST_BIRTHDAY).append(", ")
+            .append(TableConstants.CUST_EMAIL).append(", ")
+            .append(TableConstants.CUST_ADDRESS).append(", ")
+            .append(TableConstants.CUST_DELETE_YMD).append(", ")
+            .append(TableConstants.CUST_INSERT_YMD).append(", ")
+            .append(TableConstants.CUST_INSERT_PSN_CD).append(", ")
+            .append(TableConstants.CUST_UPDATE_YMD).append(", ")
+            .append(TableConstants.CUST_UPDATE_PSN_CD).append(") ")
+            .append("VALUES (NEXT VALUE FOR SEQ_CUSTOMER_ID, ?, ?, ?, ?, ?, ")
+            .append("NULL, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)");
 
         try (Connection conn = DBUtils.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
 
             setCustomerParams(stmt, editForm);
             stmt.setInt(6, psnCd); // INSERT_PSN_CD
             stmt.setInt(7, psnCd); // UPDATE_PSN_CD
 
             stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Error inserting customer", e);
         }
     }
 
-
+    /**
+     * Updates an existing customer record.
+     *
+     * @param editForm customer data to update
+     * @param psnCd    personal code of the user performing the operation
+     * @throws SQLException if update fails
+     */
     public void updateCustomer(T003Form editForm, Integer psnCd) throws SQLException {
-        String sql = "UPDATE MSTCUSTOMER " +
-                     "SET CUSTOMER_NAME = ?, SEX = ?, BIRTHDAY = ?, EMAIL = ?, ADDRESS = ?, " +
-                     "DELETE_YMD = NULL, UPDATE_YMD = CURRENT_TIMESTAMP, UPDATE_PSN_CD = ? " +
-                     "WHERE CUSTOMER_ID = ?";
+        StringBuilder sql = new StringBuilder()
+            .append("UPDATE ").append(TableConstants.TABLE_MSTCUSTOMER).append(" SET ")
+            .append(TableConstants.CUST_CUSTOMER_NAME).append(" = ?, ")
+            .append(TableConstants.CUST_SEX).append(" = ?, ")
+            .append(TableConstants.CUST_BIRTHDAY).append(" = ?, ")
+            .append(TableConstants.CUST_EMAIL).append(" = ?, ")
+            .append(TableConstants.CUST_ADDRESS).append(" = ?, ")
+            .append(TableConstants.CUST_DELETE_YMD).append(" = NULL, ")
+            .append(TableConstants.CUST_UPDATE_YMD).append(" = CURRENT_TIMESTAMP, ")
+            .append(TableConstants.CUST_UPDATE_PSN_CD).append(" = ? ")
+            .append("WHERE ").append(TableConstants.CUST_CUSTOMER_ID).append(" = ?");
 
         try (Connection conn = DBUtils.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
 
             setCustomerParams(stmt, editForm);
-            stmt.setInt(6, psnCd);                   // UPDATE_PSN_CD
+            stmt.setInt(6, psnCd); // UPDATE_PSN_CD
             stmt.setInt(7, editForm.getCustomerId()); // WHERE clause
 
             stmt.executeUpdate();
@@ -110,12 +148,12 @@ public class T003Dao {
      */
     private T002Dto mapRow(ResultSet rs) throws SQLException {
         T002Dto dto = new T002Dto();
-        dto.setCustomerID(rs.getInt("CUSTOMER_ID"));
-        dto.setCustomerName(rs.getString("CUSTOMER_NAME"));
-        dto.setSex(rs.getString("SEX"));
-        dto.setBirthday(rs.getString("BIRTHDAY"));
-        dto.setEmail(rs.getString("EMAIL"));
-        dto.setAddress(rs.getString("ADDRESS"));
+        dto.setCustomerID(rs.getInt(TableConstants.CUST_CUSTOMER_ID));
+        dto.setCustomerName(rs.getString(TableConstants.CUST_CUSTOMER_NAME));
+        dto.setSex(rs.getString(TableConstants.CUST_SEX));
+        dto.setBirthday(rs.getString(TableConstants.CUST_BIRTHDAY));
+        dto.setEmail(rs.getString(TableConstants.CUST_EMAIL));
+        dto.setAddress(rs.getString(TableConstants.CUST_ADDRESS));
         return dto;
     }
 
@@ -123,7 +161,7 @@ public class T003Dao {
      * Sets common customer fields in a {@link PreparedStatement}.
      *
      * @param stmt     prepared statement
-     * @param customer customer data
+     * @param editForm customer data
      * @throws SQLException if setting parameters fails
      */
     private void setCustomerParams(PreparedStatement stmt, T003Form editForm) throws SQLException {

@@ -65,7 +65,7 @@ public class T002Action extends Action {
 	 */
 	public ActionForward deleteCustomer(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-		T002Form t002Form = (T002Form) form;
+		T002Form t002Form = (T002Form) form;	
 		t002Service.deleteCustomers(t002Form.getCustomerIds());
 		return findCustomer(mapping, form, request, response);
 	}

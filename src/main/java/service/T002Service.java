@@ -151,11 +151,11 @@ public class T002Service {
                                        int currentPage, int totalPages, 
                                        List<T002Dto> customers, T002SCO sco) {
         
-        request.setAttribute(Constants.PRAM_CUSTOMERS, customers);
-        request.setAttribute(Constants.PRAM_DISABLE_FIRST, currentPage == 1);
-        request.setAttribute(Constants.PRAM_DISABLE_PREV, currentPage == 1);
-        request.setAttribute(Constants.PRAM_DISABLE_NEXT, currentPage == totalPages || totalPages == 0);
-        request.setAttribute(Constants.PRAM_DISABLE_LAST, currentPage == totalPages || totalPages == 0);
+        request.setAttribute(Constants.PARAM_CUSTOMERS, customers);
+        request.setAttribute(Constants.PARAM_DISABLE_FIRST, currentPage == 1);
+        request.setAttribute(Constants.PARAM_DISABLE_PREV, currentPage == 1);
+        request.setAttribute(Constants.PARAM_DISABLE_NEXT, currentPage == totalPages || totalPages == 0);
+        request.setAttribute(Constants.PARAM_DISABLE_LAST, currentPage == totalPages || totalPages == 0);
 
         updateFormWithPaginationData(form, currentPage, totalPages, sco);
     }

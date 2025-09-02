@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import common.TableConstants;
 import dto.T001Dto;
 import form.T001Form;
 import utils.DBUtils;
@@ -12,7 +13,7 @@ import utils.DBUtils;
 /**
  * DAO class responsible for handling login operations.
  * <p>
- * Provides methods to verify user credentials against the {@code MSTUSER} table.
+ * Provides methods to verify user credentials against the MSTUSER table.
  * </p>
  */
 public class T001Dao {
@@ -21,8 +22,7 @@ public class T001Dao {
     private static final T001Dao instance = new T001Dao();
 
     /** Private constructor to prevent external instantiation */
-    private T001Dao() {
-    }
+    private T001Dao() {}
 
     /**
      * Returns the singleton instance of {@code T001Dao}.
@@ -39,41 +39,40 @@ public class T001Dao {
      * Executes a query against {@code MSTUSER} table to validate login.
      * </p>
      *
-     * @param inputDto {@link T001Dto} containing {@code userId} and {@code password}
+     * @param t001Form {@link T001Form} containing {@code userId} and {@code password}
      * @return {@link T001Dto} with user details if credentials match, otherwise {@code null}
      * @throws SQLException if a database access error occurs
      */
     public T001Dto getUserLogin(T001Form t001Form) throws SQLException {
-        // SQL query to validate user credentials
-        String sql = """
-                SELECT USERID, USERNAME, PSN_CD
-                FROM MSTUSER
-                WHERE DELETE_YMD IS NULL AND USERID = ? AND PASSWORD = ?
-                """;
+        // Build SQL dynamically using constants
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT ")
+           .append(TableConstants.USER_USERID).append(", ")
+           .append(TableConstants.USER_USERNAME).append(", ")
+           .append(TableConstants.USER_PSN_CD)
+           .append(" FROM ").append(TableConstants.TABLE_MSTUSER)
+           .append(" WHERE ").append(TableConstants.USER_DELETE_YMD).append(" IS NULL ")
+           .append(" AND ").append(TableConstants.USER_USERID).append(" = ?")
+           .append(" AND ").append(TableConstants.USER_PASSWORD).append(" = ?");
 
-        // Try-with-resources to ensure connection and statement are closed properly
         try (Connection conn = DBUtils.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
-            // Set query parameters from input DTO
+            // Set query parameters
             ps.setString(1, t001Form.getUserId());
             ps.setString(2, t001Form.getPassword());
 
-            // Execute query and process result
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     // Map result set to DTO
                     T001Dto userDto = new T001Dto();
-                    userDto.setUserId(rs.getString("USERID"));
-                    userDto.setUserName(rs.getString("USERNAME"));
-                    userDto.setPsnCd(rs.getInt("PSN_CD"));
+                    userDto.setUserId(rs.getString(TableConstants.USER_USERID));
+                    userDto.setUserName(rs.getString(TableConstants.USER_USERNAME));
+                    userDto.setPsnCd(rs.getInt(TableConstants.USER_PSN_CD));
                     return userDto;
                 }
             }
         }
-
-        // Return null if no matching user found
         return null;
     }
-
 }

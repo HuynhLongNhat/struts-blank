@@ -84,7 +84,7 @@ public class T001Action extends Action {
 	 * @throws Exception if any application-level error occurs
 	 */
 	public ActionForward getUserLogin(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
+			HttpServletResponse response) throws Exception {	
 		T001Form loginForm = (T001Form) form;
 		T001Dto user = t001Service.getUserLogin(loginForm);
 		if (user != null) {
