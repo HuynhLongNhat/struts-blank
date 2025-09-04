@@ -102,18 +102,7 @@ public class Constants {
     
     public static final String PARAM_TOTAL_COUNT = "totalCount";
     
-    /** Request parameter key to disable the "First" pagination button. */
-    public static final String PARAM_DISABLE_FIRST = "disabledFirst";
-
-    /** Request parameter key to disable the "Previous" pagination button. */
-    public static final String PARAM_DISABLE_PREV = "disabledPrevious";
-
-    /** Request parameter key to disable the "Next" pagination button. */
-    public static final String PARAM_DISABLE_NEXT = "disabledNext";
-
-    /** Request parameter key to disable the "Last" pagination button. */
-    public static final String PARAM_DISABLE_LAST = "disabledLast";
-
+  
     // ============================================================
     // Error message keys (for validation and i18n resource bundles)
     // ============================================================

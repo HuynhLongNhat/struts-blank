@@ -3,6 +3,7 @@ package form;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -12,6 +13,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 
 import common.Constants;
+import dto.T002Dto;
 import utils.Helper;
 
 /**
@@ -67,6 +69,45 @@ public class T002Form extends ActionForm {
 	private boolean selectAll;
 	
 	private String action ;
+	
+	private List<T002Dto> customers;
+
+	private boolean disabledFirst;
+	private boolean disabledPrevious;
+	public boolean isDisabledFirst() {
+		return disabledFirst;
+	}
+
+	public void setDisabledFirst(boolean disabledFirst) {
+		this.disabledFirst = disabledFirst;
+	}
+
+	public boolean isDisabledPrevious() {
+		return disabledPrevious;
+	}
+
+	public void setDisabledPrevious(boolean disabledPrevious) {
+		this.disabledPrevious = disabledPrevious;
+	}
+
+	public boolean isDisabledNext() {
+		return disabledNext;
+	}
+
+	public void setDisabledNext(boolean disabledNext) {
+		this.disabledNext = disabledNext;
+	}
+
+	public boolean isDisabledLast() {
+		return disabledLast;
+	}
+
+	public void setDisabledLast(boolean disabledLast) {
+		this.disabledLast = disabledLast;
+	}
+
+	private boolean disabledNext;
+	private boolean disabledLast;
 	// =========================
 	// Getters and Setters
 	// =========================
@@ -159,6 +200,23 @@ public class T002Form extends ActionForm {
 		this.action = action;
 	}
 	
+	/**
+	 * @return the customers
+	 */
+	public List<T002Dto> getCustomers() {
+		return customers;
+	}
+
+	/**
+	 * @param customers the customers to set
+	 */
+	public void setCustomers(List<T002Dto> customers) {
+		this.customers = customers;
+	}
+
+
+	
+	
 	// =========================
 	// Validation logic
 	// =========================
@@ -218,6 +276,6 @@ public class T002Form extends ActionForm {
 		}
 	}
 
-	
+
 
 }

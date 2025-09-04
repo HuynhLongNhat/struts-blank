@@ -1,9 +1,6 @@
 package service;
 
 import java.sql.SQLException;
-
-import javax.servlet.http.HttpServletRequest;
-
 import common.Constants;
 import dao.T003Dao;
 import dto.T002Dto;
@@ -57,7 +54,7 @@ public class T003Service {
      * @param form    the form to populate with customer data
      * @param request current HTTP request (not directly used but kept for future extensions)
      */
-    public void getCustomerById(T003Form form, HttpServletRequest request) {
+    public void getCustomerById(T003Form form) {
         int customerId = form.getCustomerId();
 
         if (customerId != 0) {
@@ -100,7 +97,7 @@ public class T003Service {
      * @param psnCd    person code of the user performing the operation (for audit)
      * @return {@code true} if operation succeeded, {@code false} otherwise
      */
-    public boolean saveCustomer(T003Form editForm, HttpServletRequest request, Integer psnCd) {
+    public boolean saveCustomer(T003Form editForm, Integer psnCd) {
         try {
             if (Constants.MODE_ADD.equals(editForm.getMode())) {
                 // Insert new customer

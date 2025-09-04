@@ -1,9 +1,4 @@
 package service;
-
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -12,10 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import common.Constants;
 import dao.T002Dao;
@@ -48,8 +39,15 @@ public class T002Service {
     /**
      * Searches for customers based on search conditions and handles pagination logic.
      */
-    public void searchCustomers(T002Form form, HttpServletRequest request, HttpSession session) throws SQLException {
-        T002SCO sco = getOrInitializeSco(form, request, session);
+    public T002SCO searchCustomers(T002Form form, T002SCO sco) throws SQLException {
+        String action = form.getAction();
+        if (sco == null) {
+            sco = new T002SCO();
+        }
+        if (Constants.ACTION_SEARCH.equals(action)) {
+            updateScoFromForm(sco, form);
+        }
+
         int currentPage = calculateCurrentPage(form);
         int offset = calculateOffset(currentPage);
 
@@ -59,8 +57,10 @@ public class T002Service {
         int totalPages = calculateTotalPages(totalRecords);
 
         currentPage = adjustCurrentPage(currentPage, totalPages);
-        setPaginationAttributes(request, form, currentPage, totalPages, customers, sco);
+        setPaginationAttributes( form, currentPage, totalPages, customers, sco);
+        return sco;
     }
+
 
     /**
      * Deletes customers by their IDs.
@@ -73,36 +73,34 @@ public class T002Service {
     /**
      * Exports customers to CSV file based on search conditions.
      */
-    public void exportCustomersToCSV(T002Form form, HttpServletRequest request, HttpServletResponse response)
-            throws SQLException, IOException {
-
-        T002SCO sco = getExportSco(request, form);
+    public String exportCustomersToCSV(T002Form form, T002SCO sco) throws SQLException {
+        if (sco == null) {
+            sco = createScoFromForm(form);
+        }
         List<T002Dto> customers = fetchAllCustomers(sco);
 
-        prepareCsvResponse(response);
-        writeCsvContent(response, customers);
-    }
+        StringBuilder sb = new StringBuilder();
+        sb.append('\ufeff'); // BOM for UTF-8
+        sb.append(CSV_HEADER).append("\n");
 
-    private T002SCO getOrInitializeSco(T002Form form, HttpServletRequest request, HttpSession session) {
-        T002SCO sco = (T002SCO) session.getAttribute(Constants.SESSION_T002_SCO);
-        
-        if (sco == null) {
-            sco = new T002SCO();
-            session.setAttribute(Constants.SESSION_T002_SCO, sco);
+        for (T002Dto customer : customers) {
+            sb.append(buildCustomerRow(customer)).append("\n");
         }
 
-        if (isSearchAction(request)) {
-            updateScoFromForm(sco, form);
-            session.setAttribute(Constants.SESSION_T002_SCO, sco);
-        }
-        
-        return sco;
+        return sb.toString();
     }
+    private String buildCustomerRow(T002Dto customer) {
+        String customerId = String.valueOf(customer.getCustomerID());
+        String customerName = escapeCsv(customer.getCustomerName());
+        String sex = escapeCsv(customer.getSex());
+        String birthday = customer.getBirthday();
+        String email = escapeCsv(customer.getEmail());
+        String address = escapeCsv(customer.getAddress());
+        return String.format("\"%s\",%s,%s,=\"%s\",%s,%s",
+                customerId, customerName, sex, birthday, email, address);
+    }
+   
 
-    private boolean isSearchAction(HttpServletRequest request) {
-        String action = request.getParameter(Constants.PARAM_ACTION);
-        return Constants.ACTION_SEARCH.equals(action);
-    }
 
     private void updateScoFromForm(T002SCO sco, T002Form form) {
         sco.setCustomerName(form.getCustomerName());
@@ -147,17 +145,16 @@ public class T002Service {
         return currentPage;
     }
 
-    private void setPaginationAttributes(HttpServletRequest request, T002Form form, 
+    private void setPaginationAttributes( T002Form form, 
                                        int currentPage, int totalPages, 
                                        List<T002Dto> customers, T002SCO sco) {
-        
-        request.setAttribute(Constants.PARAM_CUSTOMERS, customers);
-        request.setAttribute(Constants.PARAM_DISABLE_FIRST, currentPage == 1);
-        request.setAttribute(Constants.PARAM_DISABLE_PREV, currentPage == 1);
-        request.setAttribute(Constants.PARAM_DISABLE_NEXT, currentPage == totalPages || totalPages == 0);
-        request.setAttribute(Constants.PARAM_DISABLE_LAST, currentPage == totalPages || totalPages == 0);
+    	form.setCustomers(customers);
+    	form.setDisabledFirst(currentPage == 1);
+    	form.setDisabledPrevious(currentPage == 1);
+    	form.setDisabledNext(currentPage == totalPages || totalPages == 0);
+    	form.setDisabledLast(currentPage == totalPages || totalPages == 0);
+    	updateFormWithPaginationData(form, currentPage, totalPages, sco);
 
-        updateFormWithPaginationData(form, currentPage, totalPages, sco);
     }
 
     private void updateFormWithPaginationData(T002Form form, int currentPage, int totalPages, T002SCO sco) {
@@ -171,17 +168,7 @@ public class T002Service {
         form.setBirthdayTo(sco.getBirthdayTo());
     }
 
-    private T002SCO getExportSco(HttpServletRequest request, T002Form form) {
-        HttpSession session = request.getSession();
-        T002SCO sco = (T002SCO) session.getAttribute(Constants.SESSION_T002_SCO);
-        
-        if (sco == null) {
-            sco = createScoFromForm(form);
-        }
-        
-        return sco;
-    }
-
+   
     private T002SCO createScoFromForm(T002Form form) {
         T002SCO sco = new T002SCO();
         sco.setCustomerName(form.getCustomerName());
@@ -196,44 +183,12 @@ public class T002Service {
         return extractCustomersFromData(data);
     }
 
-    private void prepareCsvResponse(HttpServletResponse response) {
-        String fileName = generateFileName();
-        response.setContentType("text/csv; charset=UTF-8");
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-        response.setCharacterEncoding("UTF-8");
-    }
-
-    private String generateFileName() {
+    public String generateFileName() {
         String dateString = new SimpleDateFormat(CSV_DATE_FORMAT).format(new Date());
         return CSV_FILE_PREFIX + dateString + CSV_FILE_EXTENSION;
     }
 
-    private void writeCsvContent(HttpServletResponse response, List<T002Dto> customers) throws IOException {
-        try (PrintWriter writer = createUtf8Writer(response)) {
-            writer.write('\ufeff'); // BOM for UTF-8
-            writer.println(CSV_HEADER);
-            
-            for (T002Dto customer : customers) {
-                writeCustomerRow(writer, customer);
-            }
-        }
-    }
-
-    private PrintWriter createUtf8Writer(HttpServletResponse response) throws IOException {
-        return new PrintWriter(new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8));
-    }
-
-    private void writeCustomerRow(PrintWriter writer, T002Dto customer) {
-        String customerId = String.valueOf(customer.getCustomerID());
-        String customerName = escapeCsv(customer.getCustomerName());
-        String sex = escapeCsv(customer.getSex());
-        String birthday = customer.getBirthday();
-        String email = escapeCsv(customer.getEmail());
-        String address = escapeCsv(customer.getAddress());
-        
-        writer.printf("\"%s\",%s,%s,=\"%s\",%s,%s%n",
-                customerId, customerName, sex, birthday, email, address);
-    }
+   
 
     private String escapeCsv(String value) {
         if (value == null || value.isEmpty()) {

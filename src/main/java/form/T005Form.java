@@ -3,6 +3,7 @@ package form;
 import java.util.List;
 
 import org.apache.struts.action.ActionForm;
+import org.apache.struts.util.LabelValueBean;
 
 public class T005Form extends ActionForm {
 	/**
@@ -25,14 +26,14 @@ public class T005Form extends ActionForm {
 	private String cancel;
 
 	// Danh sách headers
-	private List<String> leftHeaders; // Chưa hiển thị
-	private List<String> rightHeaders; // Đã hiển thị
+    private List<LabelValueBean> leftHeaders;
+    private List<LabelValueBean> rightHeaders;
 
 	// Header đang chọn
-	private String selectedLeftHeader;
-	private String selectedRightHeader;
+	private String[] selectedLeftHeader;
+	private String[] selectedRightHeader;
   
-
+    private String action ;
 	
 	// Getters & Setters
 	public String getUserName() {
@@ -149,34 +150,56 @@ public class T005Form extends ActionForm {
 				&& rightHeaders.indexOf(selectedRightHeader) == rightHeaders.size() - 1);
 	}
 
-	public String getSelectedLeftHeader() {
+	
+	public List<LabelValueBean> getLeftHeaders() {
+        return leftHeaders;
+    }
+
+    public void setLeftHeaders(List<LabelValueBean> leftHeaders) {
+        this.leftHeaders = leftHeaders;
+    }
+
+    public List<LabelValueBean> getRightHeaders() {
+        return rightHeaders;
+    }
+
+    public void setRightHeaders(List<LabelValueBean> rightHeaders) {
+        this.rightHeaders = rightHeaders;
+    }
+
+	/**
+	 * @return the selectedLeftHeader
+	 */
+	public String[] getSelectedLeftHeader() {
 		return selectedLeftHeader;
 	}
 
-	public void setSelectedLeftHeader(String selectedLeftHeader) {
+	/**
+	 * @param selectedLeftHeader the selectedLeftHeader to set
+	 */
+	public void setSelectedLeftHeader(String[] selectedLeftHeader) {
 		this.selectedLeftHeader = selectedLeftHeader;
 	}
-	public List<String> getRightHeaders() {
-	    return rightHeaders;
-	}
-
-	public void setRightHeaders(List<String> rightHeaders) {
-	    this.rightHeaders = rightHeaders;
-	}
- 
-	public String getSelectedRightHeader() {
+	
+	public String[] getSelectedRightHeader() {
 	    return selectedRightHeader;
 	}
 
-	public void setSelectedRightHeader(String selectedRightHeader) {
+	public void setSelectedRightHeader(String[] selectedRightHeader) {
 	    this.selectedRightHeader = selectedRightHeader;
 	}
-	
-	public List<String> getLeftHeaders() {
-	    return leftHeaders;
+
+	/**
+	 * @return the action
+	 */
+	public String getAction() {
+		return action;
 	}
 
-	public void setLeftHeaders(List<String> leftHeaders) {
-	    this.leftHeaders = leftHeaders;
+	/**
+	 * @param action the action to set
+	 */
+	public void setAction(String action) {
+		this.action = action;
 	}
 }

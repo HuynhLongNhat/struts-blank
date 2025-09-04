@@ -42,7 +42,7 @@ public class T003Action extends MappingDispatchAction {
 	public ActionForward load(ActionMapping mapping, ActionForm form, HttpServletRequest request,
 	        HttpServletResponse response) throws Exception {
 	    T003Form t003Form = (T003Form) form;
-	    t003Service.getCustomerById(t003Form, request);
+	    t003Service.getCustomerById(t003Form);
 	    return mapping.findForward(Constants.T003_EDIT);
 	}
 
@@ -55,7 +55,7 @@ public class T003Action extends MappingDispatchAction {
 	    HttpSession session = request.getSession(false);
 		T001Dto loggedInUser = (T001Dto) session.getAttribute(Constants.SESSION_USER);
 		Integer psnCd = (loggedInUser != null) ? loggedInUser.getPsnCd() : null;
-	    boolean success = t003Service.saveCustomer(t003Form, request, psnCd);
+	    boolean success = t003Service.saveCustomer(t003Form, psnCd);
         if (success) {
             return mapping.findForward(Constants.T002_SEARCH);
         } else {
