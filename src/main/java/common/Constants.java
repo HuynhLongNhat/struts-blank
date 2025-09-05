@@ -60,6 +60,11 @@ public class Constants {
     
     public static final String ACTION_IMPORT = "import";
 
+    public static final String ACTION_MOVE_LEFT = "moveLeft";
+    public static final String ACTION_MOVE_RIGHT = "moveRight";
+    public static final String ACTION_MOVE_UP = "moveUp";
+    public static final String ACTION_MOVE_DOWN	 = "moveDown";
+
     // ============================================================
     // Mode identifiers (form operation mode)
     // ============================================================

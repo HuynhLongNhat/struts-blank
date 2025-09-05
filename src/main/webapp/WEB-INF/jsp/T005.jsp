@@ -33,69 +33,83 @@
 		<div id="errorMessages" style="display: none">
 			<html:errors />
 		</div>
-		<html:form action="/T005" method="" styleClass="form-wrapper">
-			<!-- Left Column -->
-			<div class="form-column">
-				<div class="left-column">
-					<html:select name="T005Form" property="selectedLeftHeader" styleId="lstLeftHeader"
-						styleClass="form-card" multiple="true" size="10"
-						style="width:200px;">
-						<html:optionsCollection name="T005Form" property="leftHeaders"
-							label="label" value="value" />
-					</html:select>
-					<div class="button-container">
-						<html:submit styleId="btnSave" styleClass="save-btn">
-							<bean:message key="T003.button.save" />
-						</html:submit>
+
+		<!-- CHỈ MỘT FORM DUY NHẤT -->
+		<html:form action="/T005" method="post">
+			<!-- Hidden field cho action -->
+			<html:hidden property="action" value="" styleId="hiddenAction" />
+
+			<div class="form-wrapper">
+				<!-- Left Column -->
+				<div class="form-column">
+					<div class="left-column">
+						<html:select name="T005Form" property="selectedLeftHeader"
+							styleId="lstLeftHeader" styleClass="form-card"
+							size="10">
+							<html:optionsCollection name="T005Form" property="leftHeaders"
+								label="label" value="value" />
+						</html:select>
+
+
+						<div class="button-container">
+							<html:submit styleId="btnSave" styleClass="save-btn"
+							onclick="setActionAndSubmit('save')" 
+							>
+								<bean:message key="T003.button.save" />
+							</html:submit>
+						</div>
+					</div>
+					<div class="arrow-buttons">
+						<logic:equal name="T005Form" property="disabledRight" value="true">
+							<html:button property="btnRight" styleId="btnRight"
+								disabled="true" styleClass="btn-arrow">→</html:button>
+						</logic:equal>
+						<logic:notEqual name="T005Form" property="disabledRight"
+							value="true">
+							<html:button property="btnRight" styleId="btnRight"
+								onclick="setActionAndSubmit('moveRight')" styleClass="btn-arrow">→</html:button>
+						</logic:notEqual>
+
+						<html:button property="btnLeft" styleId="btnLeft"
+							onclick="setActionAndSubmit('moveLeft')" styleClass="btn-arrow">←</html:button>
 					</div>
 				</div>
-				<div class="arrow-buttons">
-					<html:form action="/T005" method="post" style="display:inline;">
-						<html:hidden property="action" value="moveRight" />
-						<html:submit styleId="btnRight">→</html:submit>
-					</html:form>
 
-					<!-- Move Left -->
-					<html:form action="/T005" method="post" style="display:inline;">
-						<html:hidden property="action" value="moveLeft" />
-						<html:submit styleId="btnLeft">←</html:submit>
-					</html:form>
-				</div>
-			</div>
-			<!-- Right Column -->
-			<div class="form-column">
-				<div class="right-column">
-					<html:select name="T005Form"  property="selectedRightHeader"
-						styleId="lstRightHeader" styleClass="form-card" multiple="true"
-						size="10" style="width:200px;">
-						<html:optionsCollection name="T005Form"   property="rightHeaders"
-							label="label" value="value" />
-					</html:select>
-					<div class="button-container">
-						<html:button property="cancel" styleId="btnCancel"
-							onclick="window.location.href='<%=request.getContextPath()%>/cancel'"
-							styleClass="cancel-btn">
-							<bean:message key="T005.button.cancel" />
-						</html:button>
+				<!-- Right Column -->
+				<div class="form-column">
+					<div class="right-column">
+						<html:select name="T005Form" property="selectedRightHeader"
+							styleId="lstRightHeader" styleClass="form-card"
+							size="10" style="width:200px;">
+							<html:optionsCollection name="T005Form" property="rightHeaders"
+								label="label" value="value" />
+						</html:select>
+						<div class="button-container">
+							<html:button property="cancel" styleId="btnCancel"
+								onclick="setActionAndSubmit('cancel')" 
+								styleClass="cancel-btn">
+								<bean:message key="T005.button.cancel" />
+							</html:button>
+						</div>
 					</div>
-				</div>
-				<div class="arrow-buttons">
-					<html:form action="/T005" method="post" style="display:inline;">
-						<html:hidden property="action" value="moveUp" />
-						<html:submit styleId="btnUp">↑</html:submit>
-					</html:form>
-
-					<!-- Move Down -->
-					<html:form action="/T005" method="post" style="display:inline;">
-						<html:hidden property="action" value="moveDown" />
-						<html:submit styleId="btnDown">↓</html:submit>
-					</html:form>
+					<div class="arrow-buttons">
+						<html:button property="btnUp" styleId="btnUp"
+							onclick="setActionAndSubmit('moveUp')" styleClass="btn-arrow">↑</html:button>
+						<html:button property="btnDown" styleId="btnDown"
+							onclick="setActionAndSubmit('moveDown')" styleClass="btn-arrow">↓</html:button>
+					</div>
 				</div>
 			</div>
 		</html:form>
 	</div>
 
 	<%@ include file="Footer.jsp"%>
+	<script>
+		function setActionAndSubmit(actionValue) {
+			document.getElementById('hiddenAction').value = actionValue;
+			document.forms[0].submit();
+		}
+	</script>
 	<script
 		src="<%=request.getContextPath()%>/WebContent/js/T005.js?ts=<%=System.currentTimeMillis()%>"></script>
 </body>

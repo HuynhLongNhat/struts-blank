@@ -43,7 +43,7 @@ body {
 .form-column {
     display: flex;
     flex-direction: row;
-    width: 300px;
+ 
  
 }
 
@@ -135,7 +135,7 @@ body {
     flex-direction: column;
     justify-content: space-around;
 }
-.arrow-buttons input[type=button] {
+.arrow-buttons input {
 	background-color: #ccc;
     border: 1px solid black;
     border-bottom: 3px solid black;
@@ -143,3 +143,5 @@ body {
     padding: 5px 20px;
     font-size: 20px;
 }
+
+

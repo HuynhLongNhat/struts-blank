@@ -11,6 +11,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.apache.struts.util.LabelValueBean;
 
 import common.Constants;
 import dto.T002Dto;
@@ -74,6 +75,11 @@ public class T002Form extends ActionForm {
 
 	private boolean disabledFirst;
 	private boolean disabledPrevious;
+	
+	private List<LabelValueBean> columnHeaders;
+	public List<LabelValueBean> getColumnHeaders() { return columnHeaders; }
+	public void setColumnHeaders(List<LabelValueBean> columnHeaders) { this.columnHeaders = columnHeaders; }
+
 	public boolean isDisabledFirst() {
 		return disabledFirst;
 	}

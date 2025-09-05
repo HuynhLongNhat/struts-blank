@@ -29,6 +29,7 @@ public class LogoutAction extends Action{
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			session.removeAttribute("user");
+			session.removeAttribute("columnHeader");
 		}
 		return mapping.findForward(Constants.T001_LOGIN);
 	}
