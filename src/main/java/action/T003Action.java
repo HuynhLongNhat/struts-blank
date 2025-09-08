@@ -21,7 +21,7 @@ import utils.Helper;
  */
 public class T003Action extends MappingDispatchAction {
 
-	private final T003Service t003Service = T003Service.getInstance();
+	private static final T003Service t003Service = T003Service.getInstance();
   
 	@Override
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,

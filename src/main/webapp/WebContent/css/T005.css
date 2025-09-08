@@ -107,6 +107,7 @@ body {
     position: relative;
     display: flex;
     justify-content: center;
+    gap : 160px;
 }
 
 
@@ -134,6 +135,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+    margin-left : 15px;
 }
 .arrow-buttons input {
 	background-color: #ccc;

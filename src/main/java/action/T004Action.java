@@ -22,8 +22,7 @@ import utils.Helper;
  */
 public class T004Action extends Action {
 
-    private T004Service t004Service = new T004Service();
-
+	public static final T004Service t004Service = T004Service.getInstance();
     /**
      * Entry point for T004 action.
      * Validates user session and delegates to specific actions.

@@ -189,3 +189,42 @@ body {
 	border-right: 2px solid #000;
 }
 
+/* T002.css */
+
+/* Checkbox column */
+.custom-checkbox {
+    width: 5%;
+}
+
+/* Customer ID column */
+.header-customerId {
+    width: 10%;
+}
+
+/* Customer Name column */
+.header-customerName {
+    width: 20%;
+}
+
+/* Sex column */
+.header-sex {
+    width: 7%;
+}
+
+/* Birthday column */
+.header-birthday {
+    width: 15%;
+}
+
+/* Address column */
+.header-address {
+    width: 25%;
+}
+
+/* Email column */
+.header-email {
+    width: 18%;
+}
+
+
+

@@ -29,7 +29,7 @@ import utils.Helper;
 public class T001Action extends Action {
 
 	/** Service class responsible for login operations. */
-	private final T001Service t001Service = T001Service.getInstance();
+	private static final T001Service t001Service = T001Service.getInstance();
 
 	@Override
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,

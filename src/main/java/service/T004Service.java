@@ -25,24 +25,26 @@ import utils.Helper;
  *  - Return success or error messages
  */
 public class T004Service {
+	
+	
+	/** Singleton instance of {@code T001Service} */
+	private static final T004Service instance = new T004Service();
 
-    private final T004Dao t004Dao;
+	/** DAO instance for accessing {@code MSTUSER} table */
+	private final T004Dao t004Dao = T004Dao.getInstance();
 
-    /**
-     * Default constructor initializing DAO.
-     */
-    public T004Service() {
-        this.t004Dao = new T004Dao();
-    }
+	/** Private constructor to enforce singleton pattern */
+	private T004Service() {
+	}
 
-    /**
-     * Constructor with custom DAO (useful for testing).
-     *
-     * @param t004Dao T004Dao instance
-     */
-    public T004Service(T004Dao t004Dao) {
-        this.t004Dao = t004Dao;
-    }
+	/**
+	 * Returns the singleton instance of {@code T001Service}.
+	 *
+	 * @return singleton instance
+	 */
+	public static T004Service getInstance() {
+		return instance;
+	}
 
     /**
      * Imports customer data from uploaded CSV file.

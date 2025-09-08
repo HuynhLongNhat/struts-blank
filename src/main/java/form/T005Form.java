@@ -9,244 +9,282 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.apache.struts.util.LabelValueBean;  
 
 import common.Constants;
 
 /**
  * Form class for T005 screen.
- * Holds user information, header configuration, and selected actions.
+ * <p>
+ * Manages available and selected column headers along with user actions such as
+ * moving headers left, right, up, or down.
+ * </p>
  */
 public class T005Form extends ActionForm {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    // User information fields
-    private String userName;
-    private String sex;
-    private String email;
-    private String address;
-    private String customerId;
-    private String customerName;
-    private String birthday;
+	// ================== Fields ==================
 
-    // Control flag
-    private boolean disabledRight;
+	/** Flag to indicate whether the right header list is disabled */
+	private boolean disabledRight;
 
-    // Lists of available and selected headers
-    private List<LabelValueBean> leftHeaders = new ArrayList<>();
-    private List<LabelValueBean> rightHeaders = new ArrayList<>();
+	/** List of available headers on the left side */
+	private List<ColumnHeader> leftHeaders = new ArrayList<>();
 
-    // Currently selected headers
-    private String selectedLeftHeader;
-    private String selectedRightHeader;
+	/** List of selected headers on the right side */
+	private List<ColumnHeader> rightHeaders = new ArrayList<>();
 
-    // Action type (move, save, cancel, etc.)
-    private String action;
+	/** Currently selected headers from the left side */
+	private String[] selectedLeftHeader;
 
-    // ================== Getters & Setters ==================
+	/** Currently selected headers from the right side */
+	private String[] selectedRightHeader;
 
-    /** @return user name */
-    public String getUserName() {
-        return userName;
-    }
+	/** Current action type (move, save, cancel, etc.) */
+	private String action;
 
-    /** @param userName set user name */
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
+	// ================== Getters & Setters ==================
 
-    /** @return sex */
-    public String getSex() {
-        return sex;
-    }
+	/**
+	 * Get the list of available headers on the left side.
+	 *
+	 * @return list of {@link ColumnHeader} on the left
+	 */
+	public List<ColumnHeader> getLeftHeaders() {
+		return leftHeaders;
+	}
 
-    /** @param sex set sex */
-    public void setSex(String sex) {
-        this.sex = sex;
-    }
+	/**
+	 * Set the list of available headers on the left side.
+	 *
+	 * @param leftHeaders list of {@link ColumnHeader} to assign
+	 */
+	public void setLeftHeaders(List<ColumnHeader> leftHeaders) {
+		this.leftHeaders = leftHeaders;
+	}
 
-    /** @return email */
-    public String getEmail() {
-        return email;
-    }
+	/**
+	 * Get the list of selected headers on the right side.
+	 *
+	 * @return list of {@link ColumnHeader} on the right
+	 */
+	public List<ColumnHeader> getRightHeaders() {
+		return rightHeaders;
+	}
 
-    /** @param email set email */
-    public void setEmail(String email) {
-        this.email = email;
-    }
+	/**
+	 * Set the list of selected headers on the right side.
+	 *
+	 * @param rightHeaders list of {@link ColumnHeader} to assign
+	 */
+	public void setRightHeaders(List<ColumnHeader> rightHeaders) {
+		this.rightHeaders = rightHeaders;
+	}
 
-    /** @return address */
-    public String getAddress() {
-        return address;
-    }
+	/**
+	 * Get the array of currently selected headers on the left.
+	 *
+	 * @return array of selected left header values
+	 */
+	public String[] getSelectedLeftHeader() {
+		return selectedLeftHeader;
+	}
 
-    /** @param address set address */
-    public void setAddress(String address) {
-        this.address = address;
-    }
+	/**
+	 * Set the array of selected headers on the left.
+	 *
+	 * @param selectedLeftHeader array of left header values to assign
+	 */
+	public void setSelectedLeftHeader(String[] selectedLeftHeader) {
+		this.selectedLeftHeader = selectedLeftHeader;
+	}
 
-    /** @return customer ID */
-    public String getCustomerId() {
-        return customerId;
-    }
+	/**
+	 * Get the array of currently selected headers on the right.
+	 *
+	 * @return array of selected right header values
+	 */
+	public String[] getSelectedRightHeader() {
+		return selectedRightHeader;
+	}
 
-    /** @param customerId set customer ID */
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
+	/**
+	 * Set the array of selected headers on the right.
+	 *
+	 * @param selectedRightHeader array of right header values to assign
+	 */
+	public void setSelectedRightHeader(String[] selectedRightHeader) {
+		this.selectedRightHeader = selectedRightHeader;
+	}
 
-    /** @return customer name */
-    public String getCustomerName() {
-        return customerName;
-    }
+	/**
+	 * Get the current action.
+	 *
+	 * @return the current action (move, save, cancel, etc.)
+	 */
+	public String getAction() {
+		return action;
+	}
 
-    /** @param customerName set customer name */
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
+	/**
+	 * Set the current action.
+	 *
+	 * @param action the action to assign
+	 */
+	public void setAction(String action) {
+		this.action = action;
+	}
 
-    /** @return birthday */
-    public String getBirthday() {
-        return birthday;
-    }
+	/**
+	 * Check if the right list is disabled.
+	 *
+	 * @return true if disabled, false otherwise
+	 */
+	public boolean isDisabledRight() {
+		return disabledRight;
+	}
 
-    /** @param birthday set birthday */
-    public void setBirthday(String birthday) {
-        this.birthday = birthday;
-    }
+	/**
+	 * Set the disabled flag for the right list.
+	 *
+	 * @param disabledRight true to disable, false to enable
+	 */
+	public void setDisabledRight(boolean disabledRight) {
+		this.disabledRight = disabledRight;
+	}
 
-    /**
-     * @return the list of left headers
-     */
-    public List<LabelValueBean> getLeftHeaders() {
-        if (leftHeaders == null) {
-            leftHeaders = new ArrayList<>();
-        }
-        return leftHeaders;
-    }
+	// ================== Copy / Deep Copy ==================
 
-    /**
-     * @param leftHeaders set the list of left headers
-     */
-    public void setLeftHeaders(List<LabelValueBean> leftHeaders) {
-        this.leftHeaders = leftHeaders;
-    }
+	/**
+	 * Copy data from another form into the current form.
+	 * <p>
+	 * Performs a deep copy of header lists and arrays to avoid reference sharing.
+	 * </p>
+	 *
+	 * @param source the source {@link T005Form} to copy data from
+	 */
+	public void copyFrom(T005Form source) {
+		if (source.getLeftHeaders() != null) {
+			this.leftHeaders = cloneHeaders(source.getLeftHeaders());
+		}
+		if (source.getRightHeaders() != null) {
+			this.rightHeaders = cloneHeaders(source.getRightHeaders());
+		}
 
-    /**
-     * @return the list of right headers
-     */
-    public List<LabelValueBean> getRightHeaders() {
-        if (rightHeaders == null) {
-            rightHeaders = new ArrayList<>();
-        }
-        return rightHeaders;
-    }
+	}
 
-    /**
-     * @param rightHeaders set the list of right headers
-     */
-    public void setRightHeaders(List<LabelValueBean> rightHeaders) {
-        this.rightHeaders = rightHeaders;
-    }
+	/**
+	 * Create a new form instance and copy all data from the current form.
+	 *
+	 * @return a new {@link T005Form} containing copied data
+	 */
+	public T005Form deepCopy() {
+		T005Form copy = new T005Form();
+		copy.copyFrom(this);
+		return copy;
+	}
 
-    /** @return selected left header */
-    public String getSelectedLeftHeader() {
-        return selectedLeftHeader;
-    }
+	/**
+	 * Create a deep copy of a list of column headers.
+	 *
+	 * @param headers the original list of headers
+	 * @return a new list containing cloned {@link ColumnHeader} objects
+	 */
+	private List<ColumnHeader> cloneHeaders(List<ColumnHeader> headers) {
+		List<ColumnHeader> copy = new ArrayList<>();
+		for (ColumnHeader item : headers) {
+			copy.add(new ColumnHeader(item.getLabel(), item.getValue(), item.getCssClass()));
+		}
+		return copy;
+	}
+	
+	@Override
+	public void reset (ActionMapping mapping, HttpServletRequest request) {
+      this.action = null;
+	}
+	// ================== Validation ==================
 
-    /** @param selectedLeftHeader set selected left header */
-    public void setSelectedLeftHeader(String selectedLeftHeader) {
-        this.selectedLeftHeader = selectedLeftHeader;
-    }
+	/**
+	 * Validate form data based on the current action.
+	 * <ul>
+	 * <li><b>Move Right</b>: requires at least one left header to be selected.</li>
+	 * <li><b>Move Left</b>: requires at least one right header to be selected, and
+	 * prevents removal of "checkbox" or "customerID".</li>
+	 * <li><b>Move Up / Move Down</b>: requires at least one right header to be
+	 * selected.</li>
+	 * </ul>
+	 *
+	 * @param mapping the current {@link ActionMapping}
+	 * @param request the current {@link HttpServletRequest}
+	 * @return {@link ActionErrors} containing validation results
+	 */
+	@Override
+	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
+	    ActionErrors errors = new ActionErrors();
+	    String action = getAction();
 
-    /** @return selected right header */
-    public String getSelectedRightHeader() {
-        return selectedRightHeader;
-    }
+	    // If no action is specified → skip validation
+	    if (action == null) {
+	        return errors; 
+	    }
 
-    /** @param selectedRightHeader set selected right header */
-    public void setSelectedRightHeader(String selectedRightHeader) {
-        this.selectedRightHeader = selectedRightHeader;
-    }
+	    switch (action) {
+	        case Constants.ACTION_MOVE_RIGHT:
+	            // Validate when moving items from left to right:
+	            // Must select at least one item on the left list
+	            requireSelected(selectedLeftHeader, errors);
+	            break;
 
-    /** @return current action */
-    public String getAction() {
-        return action;
-    }
+	        case Constants.ACTION_MOVE_LEFT:
+	            // Validate when moving items from right to left:
+	            // Must select at least one item on the right list
+	            if (requireSelected(selectedRightHeader, errors)) {
+	                // Additionally: check that certain items cannot be removed
+	                for (String header : selectedRightHeader) {
+	                    if (Constants.HEADER_CHECKBOX.equalsIgnoreCase(header)
+	                        || Constants.HEADER_CUSTOMER_ID.equalsIgnoreCase(header)) {
 
-    /** @param action set current action */
-    public void setAction(String action) {
-        this.action = action;
-    }
+	                        // Use label for error message based on header type
+	                        String label = Constants.HEADER_CHECKBOX.equalsIgnoreCase(header) 
+	                                ? Constants.LABEL_CHECKBOX
+	                                : Constants.LABEL_CUSTOMER_ID;
 
-    /** @return whether right list is disabled */
-    public boolean isDisabledRight() {
-        return disabledRight;
-    }
+	                        // Add validation error: these headers cannot be removed
+	                        errors.add(Constants.GLOBAL, 
+	                            new ActionMessage(Constants.ERROR_CANNOT_REMOVE, label));
+	                    }
+	                }
+	            }
+	            break;
 
-    /** @param disabledRight set disabled flag for right list */
-    public void setDisabledRight(boolean disabledRight) {
-        this.disabledRight = disabledRight;
-    }
+	        case Constants.ACTION_MOVE_UP:
+	        case Constants.ACTION_MOVE_DOWN:
+	            // Validate when reordering items (up or down):
+	            // Must select at least one item on the right list
+	            requireSelected(selectedRightHeader, errors);
+	            break;
 
-    // ================== Validation ==================
+	        default:
+	            // For other actions → no validation rules
+	            break;
+	    }
 
-    /**
-     * Validate form input based on the current action.
-     *
-     * @param mapping the ActionMapping
-     * @param request the HttpServletRequest
-     * @return ActionErrors containing validation results
-     */
-    @Override
-    public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-        ActionErrors errors = new ActionErrors();
-        String action = getAction();
+	    return errors;
+	}
 
-        if (action == null) {
-            return errors; // Không có action thì không validate
-        }
 
-        switch (action) {
-            case Constants.ACTION_MOVE_RIGHT:
-                requireSelected(selectedLeftHeader, errors);
-                break;
-
-            case Constants.ACTION_MOVE_LEFT:
-                if (requireSelected(selectedRightHeader, errors)) {
-                    if ("CheckBox".equals(selectedRightHeader) || "Customer ID".equals(selectedRightHeader)) {
-                        errors.add(Constants.GLOBAL,
-                                new ActionMessage("error.headerItem.cannotRemove", selectedRightHeader));
-                    }
-                }
-                break;
-
-            case Constants.ACTION_MOVE_UP:
-            case Constants.ACTION_MOVE_DOWN:
-                requireSelected(selectedRightHeader, errors);
-                break;
-
-            default:
-                // các action khác không cần validate
-                break;
-        }
-
-        return errors;
-    }
-
-    /**
-     * Validate bắt buộc chọn header.
-     *
-     * @param value  giá trị được chọn
-     * @param errors ActionErrors
-     * @return true nếu có giá trị, false nếu null
-     */
-    private boolean requireSelected(String value, ActionErrors errors) {
-        if (value == null) {
-            errors.add(Constants.GLOBAL, new ActionMessage("error.headerItem.required"));
-            return false;
-        }
-        return true;
-    }
+	/**
+	 * Utility method to check that at least one header has been selected.
+	 *
+	 * @param values array of selected values
+	 * @param errors the {@link ActionErrors} object to collect validation errors
+	 * @return true if values are not null and not empty, false otherwise
+	 */
+	private boolean requireSelected(String[] values, ActionErrors errors) {
+		if (values == null || values.length == 0) {
+			errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_HEADER_REQUIRED));
+			return false;
+		}
+		return true;
+	}
 }

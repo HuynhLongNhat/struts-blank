@@ -67,6 +67,7 @@ public class T002Service {
      */
     public void deleteCustomers(int[] customerIds) throws SQLException {
         List<Integer> ids = Arrays.stream(customerIds).boxed().collect(Collectors.toList());
+        System.out.println("ids" + ids);
         t002Dao.deleteCustomer(ids);
     }
 

@@ -1,8 +1,6 @@
 package action;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.function.Consumer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -11,8 +9,6 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.util.LabelValueBean;
-
 import common.Constants;
 import form.T005Form;
 import service.T005Service;
@@ -20,225 +16,178 @@ import utils.Helper;
 
 /**
  * Action class for managing column header settings (T005 screen).
+ * <p>
+ * This class handles user actions such as moving headers (left, right, up, down),
+ * saving, canceling, and initializing the header setting form.
  */
 public class T005Action extends Action {
 
-    private final T005Service t005Service = new T005Service();
+    /** Service for column header operations. */
+    private static final T005Service columnHeaderService = T005Service.getInstance();
 
     /**
-     * Executes the requested action (move, save, cancel, init).
+     * Executes the requested action based on user input.
      *
-     * @param mapping  ActionMapping for this request
-     * @param form     ActionForm associated with this request
-     * @param request  HttpServletRequest object
-     * @param response HttpServletResponse object
-     * @return ActionForward the next view to display
-     * @throws Exception if processing fails
+     * @param mapping     Struts action mapping
+     * @param actionForm  form bean holding request data
+     * @param request     HTTP request
+     * @param response    HTTP response
+     * @return            ActionForward to the next page
      */
     @Override
-    public ActionForward execute(ActionMapping mapping, ActionForm form,
+    public ActionForward execute(ActionMapping mapping, ActionForm actionForm,
                                  HttpServletRequest request, HttpServletResponse response) throws Exception {
+
+        // Redirect to login if user is not authenticated
         if (!Helper.isLogin(request)) {
             return mapping.findForward(Constants.T001_LOGIN);
         }
 
-        T005Form t005Form = (T005Form) form;
-        initFormIfNull(t005Form);
+        T005Form settingForm = (T005Form) actionForm;
+        String userAction = settingForm.getAction();
 
-        String action = t005Form.getAction();
-        if (action != null) {
-            switch (action) {
-                case Constants.ACTION_MOVE_RIGHT:
-                    return moveRight(mapping, t005Form, request);
-                case Constants.ACTION_MOVE_LEFT:
-                    return moveLeft(mapping, t005Form, request);
-                case Constants.ACTION_MOVE_UP:
-                    return moveUp(mapping, t005Form, request);
-                case Constants.ACTION_MOVE_DOWN:
-                    return moveDown(mapping, t005Form, request);
-                case "save":
-                    return save(mapping, t005Form, request);
-                case "cancel":
-                    return cancel(mapping, t005Form, request);
-                default:
-                    return initSettingForm(mapping, t005Form, request);
-            }
+        if (userAction == null) {
+            return initializeSettingForm(mapping, settingForm, request);
         }
 
-        return initSettingForm(mapping, t005Form, request);
-    }
-
-    /**
-     * Initializes empty lists if null to avoid NullPointerException.
-     *
-     * @param form T005Form object
-     */
-    private void initFormIfNull(T005Form form) {
-        if (form.getLeftHeaders() == null) {
-            form.setLeftHeaders(new ArrayList<>());
-        }
-        if (form.getRightHeaders() == null) {
-            form.setRightHeaders(new ArrayList<>());
+        switch (userAction) {
+            case Constants.ACTION_MOVE_RIGHT:
+                return processMoveAction(mapping, settingForm, request, columnHeaderService::moveRight);
+            case Constants.ACTION_MOVE_LEFT:
+                return processMoveAction(mapping, settingForm, request, columnHeaderService::moveLeft);
+            case Constants.ACTION_MOVE_UP:
+                return processMoveAction(mapping, settingForm, request, columnHeaderService::moveUp);
+            case Constants.ACTION_MOVE_DOWN:
+                return processMoveAction(mapping, settingForm, request, columnHeaderService::moveDown);
+            case Constants.ACTION_SAVE:
+                return saveChanges(mapping, request);
+            case Constants.ACTION_CANCEL:
+                return cancelChanges(mapping, request);
+            default:
+                return initializeSettingForm(mapping, settingForm, request);
         }
     }
 
     /**
-     * Initializes setting form with session data or default values.
+     * Initializes the form with values from session or sets defaults if not found.
      *
-     * @param mapping   ActionMapping
-     * @param t005Form  T005Form object
-     * @param request   HttpServletRequest object
-     * @return ActionForward T005_SETTING forward
-     * @throws Exception if initialization fails
+     * @param mapping      Struts action mapping
+     * @param currentForm  form bean to populate
+     * @param request      HTTP request
+     * @return             ActionForward to T005 setting page
      */
-    public ActionForward initSettingForm(ActionMapping mapping, T005Form t005Form, HttpServletRequest request)
-            throws Exception {
+    private ActionForward initializeSettingForm(ActionMapping mapping, T005Form currentForm,
+                                                HttpServletRequest request) throws Exception {
+
         HttpSession session = request.getSession();
 
-        T005Form sessionForm = (T005Form) session.getAttribute("columnHeader");
-        System.out.println("sessionForm" + sessionForm);
-        if (sessionForm != null) {
-            copyForm(sessionForm, t005Form);
+        T005Form temporaryForm = (T005Form) session.getAttribute(Constants.SESSION_COLUMN_HEADER_TEMPORARY);
+        if (temporaryForm != null) {
+            currentForm.copyFrom(temporaryForm);
         } else {
-            List<LabelValueBean> leftHeaders = new ArrayList<>();
-            leftHeaders.add(new LabelValueBean("Email", "email"));
-
-            List<LabelValueBean> rightHeaders = new ArrayList<>();
-            rightHeaders.add(new LabelValueBean("Customer ID", "Customer ID"));
-            rightHeaders.add(new LabelValueBean("Customer Name", "Customer Name"));
-            rightHeaders.add(new LabelValueBean("Sex", "Sex"));
-            rightHeaders.add(new LabelValueBean("Birthday", "Birthday"));
-            rightHeaders.add(new LabelValueBean("Address", "Address"));
-            rightHeaders.add(new LabelValueBean("CheckBox", "CheckBox"));
-
-            t005Form.setLeftHeaders(leftHeaders);
-            t005Form.setRightHeaders(rightHeaders);
-            t005Form.setDisabledRight(leftHeaders.isEmpty());
+            T005Form savedForm = (T005Form) session.getAttribute(Constants.SESSION_COLUMN_HEADER);
+            if (savedForm != null) {
+                currentForm.copyFrom(savedForm);
+            } else {
+                setupDefaultHeaders(currentForm);
+                session.setAttribute(Constants.SESSION_COLUMN_HEADER, currentForm.deepCopy());
+            }
+            session.setAttribute(Constants.SESSION_COLUMN_HEADER_TEMPORARY, currentForm.deepCopy());
         }
 
-        session.setAttribute("columnHeader", t005Form);
         return mapping.findForward(Constants.T005_SETTING);
     }
 
     /**
-     * Copies values from source form to target form.
+     * Sets up default left and right headers when no session data exists.
      *
-     * @param source source T005Form
-     * @param target target T005Form
+     * @param form target form bean to update
      */
-    private void copyForm(T005Form source, T005Form target) {
-        target.setLeftHeaders(new ArrayList<>(source.getLeftHeaders()));
-        target.setRightHeaders(new ArrayList<>(source.getRightHeaders()));
-        target.setDisabledRight(source.isDisabledRight());
-    }
-
-    /**
-     * Moves a column from left to right list.
-     *
-     * @param mapping ActionMapping
-     * @param form    T005Form
-     * @param request HttpServletRequest
-     * @return ActionForward T005_SETTING forward
-     * @throws Exception if processing fails
-     */
-    private ActionForward moveRight(ActionMapping mapping, T005Form form, HttpServletRequest request) throws Exception {
-        return processMove(mapping, form, request, () -> t005Service.moveRight(form));
-    }
-
-    /**
-     * Moves a column from right to left list.
-     *
-     * @param mapping ActionMapping
-     * @param form    T005Form
-     * @param request HttpServletRequest
-     * @return ActionForward T005_SETTING forward
-     * @throws Exception if processing fails
-     */
-    private ActionForward moveLeft(ActionMapping mapping, T005Form form, HttpServletRequest request) throws Exception {
-        return processMove(mapping, form, request, () -> t005Service.moveLeft(form));
-    }
-
-    /**
-     * Moves a column up in the right list.
-     *
-     * @param mapping ActionMapping
-     * @param form    T005Form
-     * @param request HttpServletRequest
-     * @return ActionForward T005_SETTING forward
-     * @throws Exception if processing fails
-     */
-    private ActionForward moveUp(ActionMapping mapping, T005Form form, HttpServletRequest request) throws Exception {
-        return processMove(mapping, form, request, () -> t005Service.moveUp(form));
-    }
-
-    /**
-     * Moves a column down in the right list.
-     *
-     * @param mapping ActionMapping
-     * @param form    T005Form
-     * @param request HttpServletRequest
-     * @return ActionForward T005_SETTING forward
-     * @throws Exception if processing fails
-     */
-    private ActionForward moveDown(ActionMapping mapping, T005Form form, HttpServletRequest request) throws Exception {
-        return processMove(mapping, form, request, () -> t005Service.moveDown(form));
-    }
-
-    /**
-     * Executes a move action and updates session.
-     *
-     * @param mapping   ActionMapping
-     * @param form      T005Form
-     * @param request   HttpServletRequest
-     * @param moveAction move logic to execute
-     * @return ActionForward T005_SETTING forward
-     */
-    private ActionForward processMove(ActionMapping mapping, T005Form form,
-                                      HttpServletRequest request, Runnable moveAction) {
-        HttpSession session = request.getSession();
-
-        T005Form sessionForm = (T005Form) session.getAttribute("columnHeader");
-        if (sessionForm != null) {
-            copyForm(sessionForm, form);
-        }
-
-        moveAction.run();
+    private void setupDefaultHeaders(T005Form form) {
+        form.setLeftHeaders(columnHeaderService.getDefaultLeftHeaders());
+        form.setRightHeaders(columnHeaderService.getDefaultRightHeaders());
         form.setDisabledRight(form.getLeftHeaders().isEmpty());
-
-        session.setAttribute("columnHeader", form);
-        return mapping.findForward(Constants.T005_SETTING);
     }
 
     /**
-     * Saves current column settings to session and goes back to search screen.
+     * Handles header move actions (right, left, up, down).
      *
-     * @param mapping ActionMapping
-     * @param form    T005Form
-     * @param request HttpServletRequest
-     * @return ActionForward T002_SEARCH forward
+     * @param mapping     Struts action mapping
+     * @param currentForm current form bean
+     * @param request     HTTP request
+     * @param moveAction  specific move operation (Consumer)
+     * @return            ActionForward to T005 setting page
      */
-    private ActionForward save(ActionMapping mapping, T005Form form, HttpServletRequest request) {
+    private ActionForward processMoveAction(ActionMapping mapping, T005Form currentForm,
+                                            HttpServletRequest request, Consumer<T005Form> moveAction) throws Exception {
+
         HttpSession session = request.getSession();
-        session.setAttribute("columnHeader", form);
+
+        // Always work on a temporary form stored in session
+        T005Form temporaryForm = getOrCreateTemporaryForm(session, currentForm);
+        currentForm.copyFrom(temporaryForm);
+
+        // Apply move logic
+        moveAction.accept(currentForm);
+        currentForm.setDisabledRight(currentForm.getLeftHeaders().isEmpty());
+
+        // Save updated temp form in session
+        session.setAttribute(Constants.SESSION_COLUMN_HEADER_TEMPORARY, currentForm.deepCopy());
+
+        return initializeSettingForm(mapping, currentForm, request);
+    }
+
+    /**
+     * Retrieves or creates a temporary form from session.
+     *
+     * @param session     HTTP session
+     * @param currentForm current form to use if no session data found
+     * @return            temporary form
+     */
+    private T005Form getOrCreateTemporaryForm(HttpSession session, T005Form currentForm) {
+        T005Form temporaryForm = (T005Form) session.getAttribute(Constants.SESSION_COLUMN_HEADER_TEMPORARY);
+
+        if (temporaryForm == null) {
+            T005Form savedForm = (T005Form) session.getAttribute(Constants.SESSION_COLUMN_HEADER);
+            if (savedForm != null) {
+                temporaryForm = savedForm.deepCopy();
+            } else {
+                setupDefaultHeaders(currentForm);
+                temporaryForm = currentForm.deepCopy();
+            }
+            session.setAttribute(Constants.SESSION_COLUMN_HEADER_TEMPORARY, temporaryForm);
+        }
+        return temporaryForm;
+    }
+
+    /**
+     * Saves changes by committing temporary session data to the main session.
+     *
+     * @param mapping Struts action mapping
+     * @param request HTTP request
+     * @return        ActionForward to T002 search page
+     */
+    private ActionForward saveChanges(ActionMapping mapping, HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        T005Form temporaryForm = (T005Form) session.getAttribute(Constants.SESSION_COLUMN_HEADER_TEMPORARY);
+
+        if (temporaryForm != null) {
+            session.setAttribute(Constants.SESSION_COLUMN_HEADER, temporaryForm.deepCopy());
+        }
+        session.removeAttribute(Constants.SESSION_COLUMN_HEADER_TEMPORARY);
+
         return mapping.findForward(Constants.T002_SEARCH);
     }
 
     /**
-     * Cancels changes and restores previous settings from session.
+     * Cancels changes by discarding temporary session data.
      *
-     * @param mapping ActionMapping
-     * @param form    T005Form
-     * @param request HttpServletRequest
-     * @return ActionForward T002_SEARCH forward
+     * @param mapping Struts action mapping
+     * @param request HTTP request
+     * @return        ActionForward to T002 search page
      */
-    private ActionForward cancel(ActionMapping mapping, T005Form form, HttpServletRequest request) {
-        HttpSession session = request.getSession();
-        T005Form sessionForm = (T005Form) session.getAttribute("columnHeader");
-
-        if (sessionForm != null) {
-            copyForm(sessionForm, form);
-        }
-
+    private ActionForward cancelChanges(ActionMapping mapping, HttpServletRequest request) {
+        request.getSession().removeAttribute(Constants.SESSION_COLUMN_HEADER_TEMPORARY);
         return mapping.findForward(Constants.T002_SEARCH);
     }
 }

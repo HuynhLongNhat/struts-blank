@@ -16,7 +16,22 @@ import utils.DBUtils;
  * and transactional import of customer data.
  */
 public class T004Dao {
+  
 
+    /** Singleton instance of T001Dao */
+    private static final T004Dao instance = new T004Dao();
+
+    /** Private constructor to prevent external instantiation */
+    private T004Dao() {}
+
+    /**
+     * Returns the singleton instance of {@code T001Dao}.
+     *
+     * @return singleton {@code T001Dao} instance
+     */
+    public static T004Dao getInstance() {
+        return instance;
+    }
     /**
      * Check if a customer exists and is not deleted.
      *
@@ -119,36 +134,39 @@ public class T004Dao {
      * @return SQL string
      */
     private String buildInsertSql() {
-        return "INSERT INTO " + TableConstants.TABLE_MSTCUSTOMER + " (" +
-               TableConstants.CUST_CUSTOMER_ID + ", " +
-               TableConstants.CUST_CUSTOMER_NAME + ", " +
-               TableConstants.CUST_SEX + ", " +
-               TableConstants.CUST_BIRTHDAY + ", " +
-               TableConstants.CUST_EMAIL + ", " +
-               TableConstants.CUST_ADDRESS + ", " +
-               TableConstants.CUST_DELETE_YMD + ", " +
-               TableConstants.CUST_INSERT_YMD + ", " +
-               TableConstants.CUST_INSERT_PSN_CD + ", " +
-               TableConstants.CUST_UPDATE_YMD + ", " +
-               TableConstants.CUST_UPDATE_PSN_CD + ") " +
-               "VALUES (NEXT VALUE FOR SEQ_CUSTOMER_ID, ?, ?, ?, ?, ?, NULL, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)";
+        StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO ").append(TableConstants.TABLE_MSTCUSTOMER).append(" (")
+          .append(TableConstants.CUST_CUSTOMER_ID).append(", ")
+          .append(TableConstants.CUST_CUSTOMER_NAME).append(", ")
+          .append(TableConstants.CUST_SEX).append(", ")
+          .append(TableConstants.CUST_BIRTHDAY).append(", ")
+          .append(TableConstants.CUST_EMAIL).append(", ")
+          .append(TableConstants.CUST_ADDRESS).append(", ")
+          .append(TableConstants.CUST_DELETE_YMD).append(", ")
+          .append(TableConstants.CUST_INSERT_YMD).append(", ")
+          .append(TableConstants.CUST_INSERT_PSN_CD).append(", ")
+          .append(TableConstants.CUST_UPDATE_YMD).append(", ")
+          .append(TableConstants.CUST_UPDATE_PSN_CD).append(") ")
+          .append("VALUES (NEXT VALUE FOR SEQ_CUSTOMER_ID, ?, ?, ?, ?, ?, NULL, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP, ?)");
+        return sb.toString();
     }
-
     /**
      * Build SQL for updating a customer.
      *
      * @return SQL string
      */
     private String buildUpdateSql() {
-        return "UPDATE " + TableConstants.TABLE_MSTCUSTOMER + " SET " +
-               TableConstants.CUST_CUSTOMER_NAME + " = ?, " +
-               TableConstants.CUST_SEX + " = ?, " +
-               TableConstants.CUST_BIRTHDAY + " = ?, " +
-               TableConstants.CUST_EMAIL + " = ?, " +
-               TableConstants.CUST_ADDRESS + " = ?, " +
-               TableConstants.CUST_UPDATE_YMD + " = CURRENT_TIMESTAMP, " +
-               TableConstants.CUST_UPDATE_PSN_CD + " = ? " +
-               "WHERE " + TableConstants.CUST_CUSTOMER_ID + " = ?";
+        StringBuilder sb = new StringBuilder();
+        sb.append("UPDATE ").append(TableConstants.TABLE_MSTCUSTOMER).append(" SET ")
+          .append(TableConstants.CUST_CUSTOMER_NAME).append(" = ?, ")
+          .append(TableConstants.CUST_SEX).append(" = ?, ")
+          .append(TableConstants.CUST_BIRTHDAY).append(" = ?, ")
+          .append(TableConstants.CUST_EMAIL).append(" = ?, ")
+          .append(TableConstants.CUST_ADDRESS).append(" = ?, ")
+          .append(TableConstants.CUST_UPDATE_YMD).append(" = CURRENT_TIMESTAMP, ")
+          .append(TableConstants.CUST_UPDATE_PSN_CD).append(" = ? ")
+          .append("WHERE ").append(TableConstants.CUST_CUSTOMER_ID).append(" = ?");
+        return sb.toString();
     }
 
     /**
@@ -157,15 +175,17 @@ public class T004Dao {
      * @return SQL string
      */
     private String buildCheckSql() {
-        return "SELECT " +
-               TableConstants.CUST_CUSTOMER_NAME + ", " +
-               TableConstants.CUST_SEX + ", " +
-               TableConstants.CUST_BIRTHDAY + ", " +
-               TableConstants.CUST_EMAIL + ", " +
-               TableConstants.CUST_ADDRESS +
-               " FROM " + TableConstants.TABLE_MSTCUSTOMER +
-               " WHERE " + TableConstants.CUST_CUSTOMER_ID + " = ? " +
-               "AND " + TableConstants.CUST_DELETE_YMD + " IS NULL";
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ")
+          .append(TableConstants.CUST_CUSTOMER_NAME).append(", ")
+          .append(TableConstants.CUST_SEX).append(", ")
+          .append(TableConstants.CUST_BIRTHDAY).append(", ")
+          .append(TableConstants.CUST_EMAIL).append(", ")
+          .append(TableConstants.CUST_ADDRESS).append(" ")
+          .append("FROM ").append(TableConstants.TABLE_MSTCUSTOMER).append(" ")
+          .append("WHERE ").append(TableConstants.CUST_CUSTOMER_ID).append(" = ? ")
+          .append("AND ").append(TableConstants.CUST_DELETE_YMD).append(" IS NULL");
+        return sb.toString();
     }
 
     /**

@@ -60,7 +60,7 @@
          <action path="/T002"
                  type="action.T002Action"
                  name="T002Form"
-                 scope="request"
+                 scope="session"
                  parameter="action"
                  validate="true"
                  input="/WEB-INF/jsp/T002.jsp">
@@ -94,7 +94,7 @@
                 path="/T005"
                 type="action.T005Action"
                 name="T005Form"
-                scope="request"
+                scope="session"
                 validate="true"
                 input="/WEB-INF/jsp/T005.jsp">   
                <forward name="T001" path="/T001.do" redirect="true"/> 

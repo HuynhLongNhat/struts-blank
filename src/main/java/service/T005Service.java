@@ -1,115 +1,211 @@
 package service;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import org.apache.struts.util.LabelValueBean;
+import java.util.*;
+import form.ColumnHeader;
 import form.T005Form;
 
 /**
  * Service class that handles operations for the T005 screen.
- * This class provides methods to move items between two lists
- * (left and right) and to reorder items in the right list.
+ * <p>
+ * This service manages two lists of column headers (left and right),
+ * allowing users to move headers between lists and reorder them within the right list.
+ * Column headers are loaded from an external properties file.
+ * </p>
  */
 public class T005Service {
+
+    /** Singleton instance of {@code T005Service}. */
+    private static final T005Service instance = new T005Service();
+
+    /** 
+     * Private constructor to enforce the singleton pattern.
+     */
+    private T005Service() {}
+
+    /**
+     * Returns the singleton instance of {@code T005Service}.
+     *
+     * @return singleton instance
+     */
+    public static T005Service getInstance() {
+        return instance;
+    }
+
+    /**
+     * Load default right column headers from the properties file.
+     *
+     * @return list of right column headers
+     */
+    public List<ColumnHeader> getDefaultRightHeaders() {
+        return loadHeadersFromProperties("right");
+    }
+
+    /**
+     * Load default left column headers from the properties file.
+     *
+     * @return list of left column headers
+     */
+    public List<ColumnHeader> getDefaultLeftHeaders() {
+        return loadHeadersFromProperties("left");
+    }
 
     /**
      * Move selected items from the left list to the right list.
      *
-     * @param form the T005Form containing left/right lists and selected item
-     * @return true if the operation succeeded
+     * @param t005Form the form containing headers
+     * @return true if items were moved, false otherwise
      */
-    public boolean moveRight(T005Form form) {
-        List<LabelValueBean> left = form.getLeftHeaders();
-        List<LabelValueBean> right = form.getRightHeaders();
-        String selected = form.getSelectedLeftHeader();
+    public boolean moveRight(T005Form t005Form) {
+        boolean isMoved = moveItemsBetweenLists(
+            t005Form.getLeftHeaders(), 
+            t005Form.getRightHeaders(), 
+            t005Form.getSelectedLeftHeader()
+        );
+        t005Form.setSelectedLeftHeader(null);
+        t005Form.setSelectedRightHeader(null);
+        return isMoved;
+    }
 
-        // Iterate over left list and move selected item(s) to right list
-        Iterator<LabelValueBean> it = left.iterator();
-        while (it.hasNext()) {
-            LabelValueBean item = it.next();
-            if (Arrays.asList(selected).contains(item.getValue())) {
-                right.add(item);  // add item to right list
-                it.remove();      // remove item from left list
+    /**
+     * Move selected items from the right list to the left list.
+     *
+     * @param t005Form the form containing headers
+     * @return true if items were moved, false otherwise
+     */
+    public boolean moveLeft(T005Form t005Form) {
+        boolean isMoved = moveItemsBetweenLists(
+            t005Form.getRightHeaders(), 
+            t005Form.getLeftHeaders(), 
+            t005Form.getSelectedRightHeader()
+        );
+        t005Form.setSelectedLeftHeader(null);
+        t005Form.setSelectedRightHeader(null);
+        return isMoved;
+    }
+
+    /**
+     * Move selected items up in the right list.
+     *
+     * @param t005Form the form containing headers
+     * @return true if items were reordered, false otherwise
+     */
+    public boolean moveUp(T005Form t005Form) {
+        return reorderItems(t005Form, -1);
+    }
+
+    /**
+     * Move selected items down in the right list.
+     *
+     * @param t005Form the form containing headers
+     * @return true if items were reordered, false otherwise
+     */
+    public boolean moveDown(T005Form t005Form) {
+        return reorderItems(t005Form, +1);
+    }
+
+    /**
+     * Helper method to move selected items from a source list to a target list.
+     *
+     * @param sourceList the list to move items from
+     * @param targetList the list to move items to
+     * @param selectedValues array of selected item values
+     * @return true if items were moved, false otherwise
+     */
+    private boolean moveItemsBetweenLists(List<ColumnHeader> sourceList, List<ColumnHeader> targetList, String[] selectedValues) {
+        if (selectedValues == null || selectedValues.length == 0) {
+            return false;
+        }
+
+        Iterator<ColumnHeader> iterator = sourceList.iterator();
+        List<String> selectedList = Arrays.asList(selectedValues);
+
+        while (iterator.hasNext()) {
+            ColumnHeader item = iterator.next();
+            if (selectedList.contains(item.getValue())) {
+                targetList.add(new ColumnHeader(item.getLabel(), item.getValue(), item.getCssClass()));
+                iterator.remove();
             }
         }
         return true;
     }
 
     /**
-     * Move selected items from the right list back to the left list.
+     * Helper method to reorder selected items within the right list.
      *
-     * @param form the T005Form containing left/right lists and selected item
-     * @return true if the operation succeeded
+     * @param t005Form   the form containing right headers
+     * @param direction  -1 to move items up, +1 to move items down
+     * @return true if items were reordered, false otherwise
      */
-    public boolean moveLeft(T005Form form) {
-        List<LabelValueBean> left = form.getLeftHeaders();
-        List<LabelValueBean> right = form.getRightHeaders();
-        String selected = form.getSelectedRightHeader();
+    private boolean reorderItems(T005Form t005Form, int direction) {
+        List<ColumnHeader> rightHeaders = t005Form.getRightHeaders();
+        String[] selectedValues = t005Form.getSelectedRightHeader();
 
-        // Iterate over right list and move selected item(s) to left list
-        Iterator<LabelValueBean> it = right.iterator();
-        while (it.hasNext()) {
-            LabelValueBean item = it.next();
-            if (Arrays.asList(selected).contains(item.getValue())) {
-                left.add(item);   // add item back to left list
-                it.remove();      // remove from right list
+        if (selectedValues == null || selectedValues.length == 0) {
+            return false;
+        }
+
+        List<String> selectedList = Arrays.asList(selectedValues);
+
+        if (direction < 0) { // move up
+            for (int i = 1; i < rightHeaders.size(); i++) {
+                ColumnHeader current = rightHeaders.get(i);
+                ColumnHeader previous = rightHeaders.get(i - 1);
+
+                if (selectedList.contains(current.getValue()) && !selectedList.contains(previous.getValue())) {
+                    rightHeaders.set(i - 1, current);
+                    rightHeaders.set(i, previous);
+                }
+            }
+        } else { // move down
+            for (int i = rightHeaders.size() - 2; i >= 0; i--) {
+                ColumnHeader current = rightHeaders.get(i);
+                ColumnHeader next = rightHeaders.get(i + 1);
+
+                if (selectedList.contains(current.getValue()) && !selectedList.contains(next.getValue())) {
+                    rightHeaders.set(i, next);
+                    rightHeaders.set(i + 1, current);
+                }
             }
         }
+
+        t005Form.setSelectedRightHeader(selectedValues);
         return true;
     }
 
     /**
-     * Move the selected item one position up in the right list.
+     * Load column headers from a properties file based on a given prefix.
+     * <p>
+     * Example keys in {@code columnHeaders.properties}:
+     * <pre>
+     * right.1.label=Customer ID
+     * right.1.value=customerID
+     * right.1.cssClass=header-customerId
+     * </pre>
      *
-     * @param form the T005Form containing the right list and selected item
-     * @return true if the swap succeeded, false if the item is at the top or not found
+     * @param prefix "left" or "right"
+     * @return list of column headers
      */
-    public boolean moveUp(T005Form form) {
-        List<LabelValueBean> right = form.getRightHeaders();
-        String selected = form.getSelectedRightHeader();
+    private List<ColumnHeader> loadHeadersFromProperties(String prefix) {
+        List<ColumnHeader> headers = new ArrayList<>();
+        try {
+            Properties properties = new Properties();
+            properties.load(getClass().getClassLoader().getResourceAsStream("columnHeaders.properties"));
 
-        // Start from index 1 because the first element cannot move up
-        for (int i = 1; i < right.size(); i++) {
-            LabelValueBean current = right.get(i);
-            if (selected.equals(current.getValue())) {
-                // Swap current item with the one above it
-                LabelValueBean prev = right.get(i - 1);
-                right.set(i - 1, current);
-                right.set(i, prev);
+            int index = 1;
+            while (true) {
+                String label = properties.getProperty(prefix + "." + index + ".label");
+                String value = properties.getProperty(prefix + "." + index + ".value");
+                String cssClass = properties.getProperty(prefix + "." + index + ".cssClass");
 
-                // Keep the selected state on the moved item
-                form.setSelectedRightHeader(current.getValue());
-                return true;
+                if (label == null || value == null) {
+                    break;
+                }
+                headers.add(new ColumnHeader(label, value, cssClass));
+                index++;
             }
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
-        return false;
-    }
-
-    /**
-     * Move the selected item one position down in the right list.
-     *
-     * @param form the T005Form containing the right list and selected item
-     * @return true if the swap succeeded, false if the item is at the bottom or not found
-     */
-    public boolean moveDown(T005Form form) {
-        List<LabelValueBean> right = form.getRightHeaders();
-        String selected = form.getSelectedRightHeader();
-
-        // Iterate until the second-to-last element
-        for (int i = 0; i < right.size() - 1; i++) {
-            LabelValueBean current = right.get(i);
-            if (selected.equals(current.getValue())) {
-                // Swap current item with the one below it
-                LabelValueBean next = right.get(i + 1);
-                right.set(i + 1, current);
-                right.set(i, next);
-
-                // Keep the selected state on the moved item
-                form.setSelectedRightHeader(current.getValue());
-                return true;
-            }
-        }
-        return false;
+        return headers;
     }
 }

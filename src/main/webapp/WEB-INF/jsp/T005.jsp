@@ -28,36 +28,24 @@
 				<bean:message key="T003.label.logout" />
 			</html:link>
 		</div>
-
 		<div class="blue-bar"></div>
 		<div id="errorMessages" style="display: none">
 			<html:errors />
 		</div>
-
-		<!-- CHỈ MỘT FORM DUY NHẤT -->
 		<html:form action="/T005" method="post">
 			<!-- Hidden field cho action -->
 			<html:hidden property="action" value="" styleId="hiddenAction" />
-
 			<div class="form-wrapper">
 				<!-- Left Column -->
 				<div class="form-column">
 					<div class="left-column">
 						<html:select name="T005Form" property="selectedLeftHeader"
-							styleId="lstLeftHeader" styleClass="form-card"
-							size="10">
+							styleId="lstLeftHeader" styleClass="form-card" size="10"
+							multiple="true">
 							<html:optionsCollection name="T005Form" property="leftHeaders"
 								label="label" value="value" />
 						</html:select>
 
-
-						<div class="button-container">
-							<html:submit styleId="btnSave" styleClass="save-btn"
-							onclick="setActionAndSubmit('save')" 
-							>
-								<bean:message key="T003.button.save" />
-							</html:submit>
-						</div>
 					</div>
 					<div class="arrow-buttons">
 						<logic:equal name="T005Form" property="disabledRight" value="true">
@@ -79,18 +67,13 @@
 				<div class="form-column">
 					<div class="right-column">
 						<html:select name="T005Form" property="selectedRightHeader"
-							styleId="lstRightHeader" styleClass="form-card"
-							size="10" style="width:200px;">
+							styleId="lstRightHeader" styleClass="form-card" size="10"
+							style="width:200px;" multiple="true"
+						>
 							<html:optionsCollection name="T005Form" property="rightHeaders"
 								label="label" value="value" />
 						</html:select>
-						<div class="button-container">
-							<html:button property="cancel" styleId="btnCancel"
-								onclick="setActionAndSubmit('cancel')" 
-								styleClass="cancel-btn">
-								<bean:message key="T005.button.cancel" />
-							</html:button>
-						</div>
+
 					</div>
 					<div class="arrow-buttons">
 						<html:button property="btnUp" styleId="btnUp"
@@ -100,16 +83,29 @@
 					</div>
 				</div>
 			</div>
+
+			<div class="button-container">
+				<html:submit styleId="btnSave" styleClass="save-btn"
+					onclick="setActionAndSubmit('save')">
+					<bean:message key="T003.button.save" />
+				</html:submit>
+				<html:button property="cancel" styleId="btnCancel"
+					onclick="setActionAndSubmit('cancel')" styleClass="cancel-btn">
+					<bean:message key="T005.button.cancel" />
+				</html:button>
+			</div>
 		</html:form>
 	</div>
 
 	<%@ include file="Footer.jsp"%>
+
 	<script>
-		function setActionAndSubmit(actionValue) {
-			document.getElementById('hiddenAction').value = actionValue;
-			document.forms[0].submit();
-		}
-	</script>
+        function setActionAndSubmit(actionValue) {
+            document.getElementById('hiddenAction').value = actionValue;
+            document.forms[0].submit();
+        }
+        </script>
+
 	<script
 		src="<%=request.getContextPath()%>/WebContent/js/T005.js?ts=<%=System.currentTimeMillis()%>"></script>
 </body>

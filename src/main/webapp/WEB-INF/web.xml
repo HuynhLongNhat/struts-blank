@@ -1,7 +1,5 @@
 <web-app>
   <display-name>Struts 1.2 Demo</display-name>
-
-  <!-- Filter đặt TRƯỚC -->
   <filter>
     <filter-name>CharacterEncodingFilter</filter-name>
     <filter-class>utils.CharacterEncodingFilter</filter-class>
