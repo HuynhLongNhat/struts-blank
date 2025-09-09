@@ -56,6 +56,8 @@ public class T001Form extends ActionForm {
 	public int getPsnCd() {
 		return psnCd;
 	}
+	
+	public String action ;
 
 	/**
 	 * Sets the personal code of the user.
@@ -119,7 +121,14 @@ public class T001Form extends ActionForm {
 	public void setUserName(String userName) {
 		this.userName = userName;
 	}
-
+	
+	public String getAction() {
+		return action;
+	}
+ 
+	public void setAction(String action) {
+		this.action = action;
+	}
 	/**
 	 * Validates the user input when the form is submitted.
 	 * <p>
@@ -134,7 +143,7 @@ public class T001Form extends ActionForm {
 	@Override
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
-		String action = request.getParameter(Constants.PARAM_ACTION);
+		String action = getAction();
 		if (Constants.ACTION_LOGIN.equals(action)) {
 			if (Helper.isEmpty(userId)) {
 				errors.add(

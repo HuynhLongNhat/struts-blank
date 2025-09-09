@@ -34,37 +34,48 @@ public class T001Dao {
     }
 
     /**
-     * Retrieves a user matching the given credentials.
-     * <p>
-     * Executes a query against {@code MSTUSER} table to validate login.
-     * </p>
+     * Retrieves a user matching the given login credentials.
      *
-     * @param t001Form {@link T001Form} containing {@code userId} and {@code password}
-     * @return {@link T001Dto} with user details if credentials match, otherwise {@code null}
+     * <p>This method validates login by querying the {@code MSTUSER} table:
+     * <ul>
+     *   <li>Ensures the account is not marked as deleted ({@code DELETE_YMD IS NULL}).</li>
+     *   <li>Checks if {@code USERID} and {@code PASSWORD} match the given input.</li>
+     *   <li>If a match is found, maps user details into {@link T001Dto}.</li>
+     *   <li>If no record matches, returns {@code null}.</li>
+     * </ul>
+     *
+     * <p>Security note: The password is compared in plain text here.
+     * In a production system, consider storing hashed passwords and 
+     * verifying with a secure hash function (e.g., bcrypt, PBKDF2, Argon2).</p>
+     *
+     * @param t001Form the {@link T001Form} containing {@code userId} and {@code password}
+     * @return a {@link T001Dto} with user details if credentials are valid; otherwise {@code null}
      * @throws SQLException if a database access error occurs
      */
     public T001Dto getUserLogin(T001Form t001Form) throws SQLException {
-        // Build SQL dynamically using constants
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT ")
-           .append(TableConstants.USER_USERID).append(", ")
-           .append(TableConstants.USER_USERNAME).append(", ")
-           .append(TableConstants.USER_PSN_CD)
-           .append(" FROM ").append(TableConstants.TABLE_MSTUSER)
-           .append(" WHERE ").append(TableConstants.USER_DELETE_YMD).append(" IS NULL ")
-           .append(" AND ").append(TableConstants.USER_USERID).append(" = ?")
-           .append(" AND ").append(TableConstants.USER_PASSWORD).append(" = ?");
+        // Build SQL query dynamically using constants for column and table names
+        StringBuilder sql = new StringBuilder()
+            .append("SELECT ")
+            .append(TableConstants.USER_USERID).append(", ")
+            .append(TableConstants.USER_USERNAME).append(", ")
+            .append(TableConstants.USER_PSN_CD)
+            .append(" FROM ").append(TableConstants.TABLE_MSTUSER)
+            .append(" WHERE ").append(TableConstants.USER_DELETE_YMD).append(" IS NULL ")
+            .append(" AND ").append(TableConstants.USER_USERID).append(" = ?")
+            .append(" AND ").append(TableConstants.USER_PASSWORD).append(" = ?");
 
+        // Use try-with-resources: auto-closes connection, statement, and result set
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
-            // Set query parameters
+            // Bind parameters: userId & password
             ps.setString(1, t001Form.getUserId());
             ps.setString(2, t001Form.getPassword());
 
+            // Execute query
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    // Map result set to DTO
+                    // Map DB row into DTO
                     T001Dto userDto = new T001Dto();
                     userDto.setUserId(rs.getString(TableConstants.USER_USERID));
                     userDto.setUserName(rs.getString(TableConstants.USER_USERNAME));
@@ -73,6 +84,10 @@ public class T001Dao {
                 }
             }
         }
+
+        // No user found
         return null;
     }
+
+
 }

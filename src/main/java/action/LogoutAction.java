@@ -25,12 +25,15 @@ public class LogoutAction extends Action{
 	 */
 	@Override
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			session.removeAttribute("user");
-			session.removeAttribute("columnHeader");
-		}
-		return mapping.findForward(Constants.T001_LOGIN);
-	}
+	        HttpServletResponse response) throws Exception {
+	    // Retrieve the current session, do not create a new one if it doesn't exist
+	    HttpSession session = request.getSession(false);
+	    // If session exists, clear user-related data
+	    if (session != null) {
+	        // Remove the logged-in user information
+	        session.removeAttribute("user");
+	    }
+	    // After logout, forward the user to the login page
+	    return mapping.findForward(Constants.T001_LOGIN);
+    }
 }

@@ -45,42 +45,47 @@ public class T003Service {
     }
 
     /**
-     * Retrieves a customer by their ID and populates the given form.
+     * Retrieves customer information by ID and populates the given form.
      * <p>
-     * If the customer exists, the form is filled with their information and set
-     * to {@code EDIT} mode. Otherwise, it is initialized in {@code ADD} mode.
+     * If a valid customer ID exists in the form, the method attempts to
+     * fetch the corresponding customer data from the database. If found,
+     * the form is populated with the customer's details and switched to
+     * {@code EDIT} mode. If the customer does not exist or an error occurs,
+     * the form defaults to {@code ADD} mode. If no customer ID is provided
+     * (zero), the form is also set to {@code ADD} mode.
      * </p>
      *
-     * @param form    the form to populate with customer data
-     * @param request current HTTP request (not directly used but kept for future extensions)
+     * @param form the form object to populate with customer data
      */
     public void getCustomerById(T003Form form) {
         int customerId = form.getCustomerId();
 
         if (customerId != 0) {
             try {
-                // Fetch customer data
+                // Fetch customer data from DAO
                 T002Dto customer = t003Dao.getCustomerById(customerId);
 
                 if (customer != null) {
-                    // Populate form for editing
+                    // Customer found → populate form with details
                     form.setCustomerId(customer.getCustomerID());
                     form.setCustomerName(customer.getCustomerName());
                     form.setSex(customer.getSex());
                     form.setBirthday(customer.getBirthday());
                     form.setEmail(customer.getEmail());
                     form.setAddress(customer.getAddress());
+
+                    // Switch to EDIT mode
                     form.setMode(Constants.MODE_EDIT);
                 } else {
                     // Customer not found → switch to ADD mode
                     form.setMode(Constants.MODE_ADD);
                 }
             } catch (Exception e) {
-                // On error → default to ADD mode
+                // Any error → default to ADD mode
                 form.setMode(Constants.MODE_ADD);
             }
         } else {
-            // New entry → ADD mode
+            // No ID (new entry) → ADD mode
             form.setMode(Constants.MODE_ADD);
         }
     }

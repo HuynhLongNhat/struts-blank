@@ -36,105 +36,194 @@ public class T002Action extends Action {
 
 	/** Service layer instance for customer operations */
 	private static final T002Service t002Service = T002Service.getInstance();
+
+	/** Service layer instance for CSV export operations */
 	private static final T005Service t005Service = T005Service.getInstance();
 
+	/**
+	 * Executes customer-related actions (search, remove, export).
+	 * <p>
+	 * - Validates session first (redirect to login if not logged in).  
+	 * - Reads the action from {@link T002Form}.  
+	 * - Routes request to the corresponding handler:  
+	 *   - {@code ACTION_REMOVE}: delete a customer.  
+	 *   - {@code ACTION_SEARCH}: search for customers.  
+	 *   - {@code ACTION_EXPORT}: export customers to CSV.  
+	 *   - Default: perform search.  
+	 * </p>
+	 *
+	 * @param mapping   the {@link ActionMapping} used to select this instance
+	 * @param form      the {@link ActionForm} containing customer search input
+	 * @param request   the {@link HttpServletRequest} object
+	 * @param response  the {@link HttpServletResponse} object
+	 * @return the {@link ActionForward} indicating the next view or action
+	 * @throws Exception if an error occurs during execution
+	 */
 	@Override
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		// Validate session
-		if (!Helper.isLogin(request)) {
-			return mapping.findForward(Constants.T001_LOGIN);
-		}
-		T002Form searchForm = (T002Form) form;
-		String action = searchForm.getAction();
-		if (action == null) {
-			return findCustomer(mapping, form, request, response);
-		}
-		switch (action) {
-		case Constants.ACTION_REMOVE:
-			return deleteCustomer(mapping, form, request, response);
-		case Constants.ACTION_SEARCH:
-			return findCustomer(mapping, form, request, response);
-		case Constants.ACTION_EXPORT:
-			return exportCSV(mapping, form, request, response);
-		default:
-			return findCustomer(mapping, form, request, response);
-		}
+	        HttpServletResponse response) throws Exception {
+
+	    // Validate that the user is logged in; otherwise, redirect to login page
+	    if (!Helper.isLogin(request)) {
+	        return mapping.findForward(Constants.T001_LOGIN);
+	    }
+
+	    // Cast generic form to T002Form (customer search form)
+	    T002Form searchForm = (T002Form) form;
+
+	    // Retrieve requested action from the form
+	    String action = searchForm.getAction();
+
+	    // If no action specified, default to searching customers
+	    if (action == null) {
+	        return findCustomer(mapping, form, request, response);
+	    }
+
+	    // Handle specific actions based on user input
+	    switch (action) {
+	        case Constants.ACTION_REMOVE:
+	            // Remove customer
+	            return deleteCustomer(mapping, form, request, response);
+	        case Constants.ACTION_SEARCH:
+	            // Search customers
+	            return findCustomer(mapping, form, request, response);
+	        case Constants.ACTION_EXPORT:
+	            // Export customer list to CSV
+	            return exportCSV(mapping, form, request, response);
+	        default:
+	            // Fallback to searching customers
+	            return findCustomer(mapping, form, request, response);
+	    }
 	}
 
+
 	/**
-	 * Deletes selected customers based on the IDs submitted from the T002 screen.
+	 * Handles customer deletion action.
+	 * <p>
+	 * - Retrieves selected customer IDs from the {@link T002Form}.  
+	 * - Calls the service layer to delete those customers.  
+	 * - After deletion, redirects to the customer search screen to refresh the list.  
+	 * </p>
 	 *
-	 * @param mapping  The ActionMapping used to select this instance.
-	 * @param form     The ActionForm bean containing selected customer IDs.
-	 * @param request  The HTTP request we are processing.
-	 * @param response The HTTP response we are creating.
-	 * @return An ActionForward to refresh the T002 JSP page after deletion.
-	 * @throws Exception If an application-level error occurs.
+	 * @param mapping   the {@link ActionMapping} used to select this instance
+	 * @param form      the {@link ActionForm} containing customer deletion input
+	 * @param request   the {@link HttpServletRequest} object
+	 * @param response  the {@link HttpServletResponse} object
+	 * @return the {@link ActionForward} pointing to the refreshed customer search view
+	 * @throws Exception if an error occurs during deletion
 	 */
 	public ActionForward deleteCustomer(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		T002Form t002Form = (T002Form) form;
-		t002Service.deleteCustomers(t002Form.getCustomerIds());
-		return findCustomer(mapping, form, request, response);
+	        HttpServletResponse response) throws Exception {
+
+	    // Cast generic ActionForm to T002Form (customer form)
+	    T002Form t002Form = (T002Form) form;
+
+	    // Call service layer to delete customers by their IDs
+	    t002Service.deleteCustomers(t002Form.getCustomerIds());
+
+	    // After deletion, forward to search action to refresh customer list
+	    return findCustomer(mapping, form, request, response);
 	}
+
 
 	/**
 	 * Core method that performs customer listing and searching with pagination.
+	 * <p>
+	 * - Retrieves or initializes the search condition object (SCO) from session.  
+	 * - Calls the service layer to perform search based on criteria in {@link T002Form}.  
+	 * - Restores or initializes column header configuration for the search results.  
+	 * - Updates the session with the latest search condition.  
+	 * - Forwards to the T002 JSP page displaying customer data.  
+	 * </p>
 	 *
-	 * @param mapping  The ActionMapping used to select this instance.
-	 * @param form     The ActionForm bean containing search criteria.
-	 * @param request  The HTTP request we are processing.
-	 * @param response The HTTP response we are creating.
-	 * @return An ActionForward to the T002 JSP page with customer data.
-	 * @throws Exception If an application-level error occurs.
+	 * @param mapping   the {@link ActionMapping} used to select this instance
+	 * @param form      the {@link ActionForm} containing search criteria
+	 * @param request   the {@link HttpServletRequest} being processed
+	 * @param response  the {@link HttpServletResponse} being created
+	 * @return an {@link ActionForward} pointing to the T002 search results page
+	 * @throws Exception if an application-level error occurs
 	 */
 	private ActionForward findCustomer(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		HttpSession session = request.getSession();
-		T002Form t002Form = (T002Form) form;
-		T002SCO sco = (T002SCO) session.getAttribute(Constants.SESSION_T002_SCO);
-		sco = t002Service.searchCustomers(t002Form, sco);
-		T005Form sessionForm = (T005Form) session.getAttribute("columnHeader");
-		if (sessionForm != null) {
-			List<ColumnHeader> headers = sessionForm.getRightHeaders();
-			t002Form.setColumnHeaders(headers);
-		} else {
-			t002Form.setColumnHeaders(t005Service.getDefaultRightHeaders());
-		}
+	        HttpServletResponse response) throws Exception {
 
-		session.setAttribute(Constants.SESSION_T002_SCO, sco);
-		return mapping.findForward(Constants.T002_SEARCH);
+	    // Retrieve session object
+	    HttpSession session = request.getSession();
+
+	    // Cast generic ActionForm to T002Form (customer search form)
+	    T002Form t002Form = (T002Form) form;
+
+	    // Retrieve previously stored search conditions (SCO) from session
+	    T002SCO sco = (T002SCO) session.getAttribute(Constants.SESSION_T002_SCO);
+
+	    // Perform search with criteria from form and previous SCO
+	    sco = t002Service.searchCustomers(t002Form, sco);
+
+	    // Try to restore column headers from session if available
+	    T005Form sessionForm = (T005Form) session.getAttribute("columnHeader");
+	    if (sessionForm != null) {
+	        // Use saved custom column headers
+	        List<ColumnHeader> headers = sessionForm.getRightHeaders();
+	        t002Form.setColumnHeaders(headers);
+	    } else {
+	        // Fallback: use default column headers from service
+	        t002Form.setColumnHeaders(t005Service.getDefaultRightHeaders());
+	    }
+
+	    // Save updated search condition back to session
+	    session.setAttribute(Constants.SESSION_T002_SCO, sco);
+
+	    // Forward to T002 search results page
+	    return mapping.findForward(Constants.T002_SEARCH);
 	}
 
 	/**
-	 * Exports customer data to CSV file based on search conditions.
+	 * Exports customer data to a CSV file based on search conditions.
+	 * <p>
+	 * - Retrieves the current search condition object (SCO) from session.  
+	 * - Calls the service layer to generate CSV data string.  
+	 * - Builds a dynamic file name for the export file.  
+	 * - Configures HTTP response headers to trigger a CSV file download.  
+	 * - Writes the CSV content directly to the response output stream.  
+	 * - Returns {@code null} because the response is already committed.  
+	 * </p>
 	 *
-	 * @param mapping  The ActionMapping used to select this instance.
-	 * @param form     The ActionForm bean containing search criteria.
-	 * @param request  The HTTP request we are processing.
-	 * @param response The HTTP response we are creating.
-	 * @return null as the response is directly written to output stream.
-	 * @throws Exception If an application-level error occurs.
+	 * @param mapping   the {@link ActionMapping} used to select this instance
+	 * @param form      the {@link ActionForm} containing search criteria
+	 * @param request   the {@link HttpServletRequest} being processed
+	 * @param response  the {@link HttpServletResponse} to which CSV data is written
+	 * @return {@code null} since the response is directly written to output stream
+	 * @throws Exception if an error occurs while generating or writing the CSV
 	 */
 	public ActionForward exportCSV(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		T002Form t002Form = (T002Form) form;
-		HttpSession session = request.getSession();
-		T002SCO sco = (T002SCO) session.getAttribute(Constants.SESSION_T002_SCO);
-		String csvData = t002Service.exportCustomersToCSV(t002Form, sco);
-		String fileName = t002Service.generateFileName();
-		response.setContentType("text/csv; charset=UTF-8");
-		response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
-		response.setCharacterEncoding("UTF-8");
+	        HttpServletResponse response) throws Exception {
 
-		try (PrintWriter writer = new PrintWriter(
-				new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8))) {
-			writer.write(csvData);
-		}
-		// Response is committed
-		return null;
+	    // Cast the generic ActionForm to T002Form (customer search form)
+	    T002Form t002Form = (T002Form) form;
 
+	    // Retrieve session to access stored search condition object (SCO)
+	    HttpSession session = request.getSession();
+	    T002SCO sco = (T002SCO) session.getAttribute(Constants.SESSION_T002_SCO);
+
+	    // Generate CSV data string from service layer using form criteria and SCO
+	    String csvData = t002Service.exportCustomersToCSV(t002Form, sco);
+
+	    // Generate a file name for the CSV export
+	    String fileName = t002Service.generateFileName();
+
+	    // Configure HTTP response headers for CSV file download
+	    response.setContentType("text/csv; charset=UTF-8");
+	    response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+	    response.setCharacterEncoding("UTF-8");
+
+	    // Write CSV data to response output stream using UTF-8 encoding
+	    try (PrintWriter writer = new PrintWriter(
+	            new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8))) {
+	        writer.write(csvData);
+	    }
+
+	    // Return null since response is already committed (download triggered)
+	    return null;
 	}
+
 
 }

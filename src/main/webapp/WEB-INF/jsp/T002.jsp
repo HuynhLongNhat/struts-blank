@@ -281,7 +281,7 @@
 				<div class="action-group">
 					<!-- Setting Header -->
 					<html:button property="btnSettingHeader" styleId="btnSettingHeader"
-						onclick="window.location.href='/Struts-blank/T005.do';">
+						onclick="window.location.href='/SpringHibernate/T005.do';">
 						<bean:message key="button.settingHeader" />
 					</html:button>
 				</div>

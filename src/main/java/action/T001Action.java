@@ -31,19 +31,36 @@ public class T001Action extends Action {
 	/** Service class responsible for login operations. */
 	private static final T001Service t001Service = T001Service.getInstance();
 
+	/**
+	 * Executes the login action logic.
+	 *
+	 * @param mapping   the {@link ActionMapping} used to select this instance
+	 * @param form      the {@link ActionForm} bean for this request
+	 * @param request   the {@link HttpServletRequest} object
+	 * @param response  the {@link HttpServletResponse} object
+	 * @return the {@link ActionForward} indicating the next view or action
+	 * @throws Exception if an error occurs during execution
+	 */
 	@Override
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		if (Helper.isLogin(request)) {
-			// User already logged in, redirect to T002
-			return mapping.findForward(Constants.T002_SEARCH);
-		} 
-		String action = request.getParameter(Constants.PARAM_ACTION);
-		if (Constants.ACTION_LOGIN.equals(action)) {
-			return getUserLogin(mapping, form, request, response);
-		}
-		return showLoginForm(mapping, form, request, response);
+	        HttpServletResponse response) throws Exception {
+	    // Check if the user is already logged in
+	    if (Helper.isLogin(request)) {
+	        // User already logged in, redirect to the T002 search screen
+	        return mapping.findForward(Constants.T002_SEARCH);
+	    }
+	    // Cast the generic ActionForm to T001Form (login form)
+	    T001Form loginForm = (T001Form) form;
+	    // Get the action submitted from the login form
+	    String action = loginForm.getAction();
+	    // If the action is "login", process user authentication
+	    if (Constants.ACTION_LOGIN.equals(action)) {
+	        return getUserLogin(mapping, form, request, response);
+	    }
+	    // If no action or another action, display the login form
+	    return showLoginForm(mapping, form, request, response);
 	}
+
 
 	/**
 	 * Displays the login form.
@@ -65,42 +82,46 @@ public class T001Action extends Action {
 			// Show login page
 			return mapping.findForward(Constants.T001_LOGIN);
 	}
-
 	/**
 	 * Processes user login.
 	 * <p>
-	 * Validates user credentials by calling
-	 * {@link T001Service#getUserLogin(T001Dto)}. If authentication is successful,
-	 * the user information is stored in the session and the request is redirected
-	 * to T002.do. Otherwise, an error message is added and the user is returned to
-	 * the login page.
+	 * - Retrieves the user login information from the submitted form.  
+	 * - Calls the service layer to validate credentials.  
+	 * - If login is successful, store the user in session and redirect to the search screen (T002).  
+	 * - If login fails, add an error message and return to the login page.  
 	 * </p>
 	 *
-	 * @param mapping  the action mapping used to select this instance
-	 * @param form     the login form containing user credentials
-	 * @param request  the HTTP request we are processing
-	 * @param response the HTTP response we are creating
-	 * @return an {@link ActionForward} to either T002.do (redirect) or login page
-	 * @throws Exception if any application-level error occurs
+	 * @param mapping   the {@link ActionMapping} used to select this instance
+	 * @param form      the {@link ActionForm} bean containing login input
+	 * @param request   the {@link HttpServletRequest} object
+	 * @param response  the {@link HttpServletResponse} object
+	 * @return the {@link ActionForward} indicating the next view or action
+	 * @throws Exception if an error occurs during execution
 	 */
 	public ActionForward getUserLogin(ActionMapping mapping, ActionForm form, HttpServletRequest request,
-			HttpServletResponse response) throws Exception {	
-		T001Form loginForm = (T001Form) form;
-		T001Dto user = t001Service.getUserLogin(loginForm);
-		if (user != null) {
-			// Store user in session after successful login
-			HttpSession session = request.getSession();
-			session.setAttribute(Constants.SESSION_USER, user);
-			return mapping.findForward(Constants.T002_SEARCH);
-		} else {
-			ActionMessages errors = new ActionMessages();
-			// Login failed, return to login page with error message
-			errors.add(
-				    Constants.GLOBAL, 
-				    new ActionMessage(Constants.ERROR_MSG_LOGIN_FAILED)
-				);
-			saveErrors(request, errors);
-			return mapping.findForward(Constants.T001_LOGIN);
-		}
+	        HttpServletResponse response) throws Exception {
+	    // Cast the generic ActionForm to the specific T001Form (login form)
+	    T001Form loginForm = (T001Form) form;
+	    // Call service to validate user credentials
+	    T001Dto user = t001Service.getUserLogin(loginForm);
+	    // If user is valid (login success)
+	    if (user != null) {
+	        // Create or retrieve session
+	        HttpSession session = request.getSession();
+	        // Store user information in session for later use
+	        session.setAttribute(Constants.SESSION_USER, user);
+	        // Redirect to T002 search screen after successful login
+	        return mapping.findForward(Constants.T002_SEARCH);
+	    } else {
+	        // Create an ActionMessages object to hold error messages
+	        ActionMessages errors = new ActionMessages();
+	        // Add a global login failed error message
+	        errors.add(Constants.GLOBAL, new ActionMessage(Constants.ERROR_MSG_LOGIN_FAILED));
+	        // Save error messages so they can be displayed on the login page
+	        saveErrors(request, errors);
+	        // Forward back to login page after failed login attempt
+	        return mapping.findForward(Constants.T001_LOGIN);
+	    }
 	}
+
 }

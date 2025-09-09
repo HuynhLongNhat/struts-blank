@@ -32,88 +32,111 @@ public class T004Dao {
     public static T004Dao getInstance() {
         return instance;
     }
+    
     /**
-     * Check if a customer exists and is not deleted.
+     * Checks whether a customer exists in the database and is not marked as deleted.
      *
-     * @param customerId the customer ID
-     * @return true if customer exists, false otherwise
-     * @throws SQLException database error
+     * <p>This method queries the {@code MSTCUSTOMER} table by {@code CUSTOMER_ID} 
+     * and ensures that the {@code DELETE_YMD} field is NULL 
+     * (i.e., the customer is still active and not logically deleted).</p>
+     *
+     * @param customerId the unique ID of the customer to check
+     * @return {@code true} if the customer exists and is active, {@code false} otherwise
+     * @throws SQLException if any database access error occurs
      */
     public boolean checkCustomerExists(int customerId) throws SQLException {
+        // SQL query to check customer existence where DELETE_YMD is NULL
         String sql = "SELECT COUNT(*) FROM " + TableConstants.TABLE_MSTCUSTOMER +
                      " WHERE " + TableConstants.CUST_CUSTOMER_ID + " = ? " +
                      "AND " + TableConstants.CUST_DELETE_YMD + " IS NULL";
 
+        // Open DB connection and prepare statement
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            // Bind parameter: set the customer ID
             pstmt.setInt(1, customerId);
+
+            // Execute query and check if result count > 0
             try (ResultSet rs = pstmt.executeQuery()) {
                 return rs.next() && rs.getInt(1) > 0;
             }
         }
     }
 
+
     /**
-     * Import a list of customers: insert new customers or update existing ones.
-     * All operations are transactional: success or rollback.
+     * Imports a list of customers: inserts new customers or updates existing ones.
      *
-     * @param customers list of customer DTOs
-     * @param psnCd personal code of the operator
-     * @return map with inserted and updated line numbers
-     * @throws SQLException database error
+     * <p>This method runs inside a transaction. If any insert/update fails, 
+     * all changes are rolled back. Customers without ID are treated as new inserts. 
+     * Existing customers are updated only if their data has changed.</p>
+     *
+     * @param customers list of customer DTOs to be imported
+     * @param psnCd     personal code of the operator performing the action
+     * @return a result map containing:
+     *         <ul>
+     *           <li>"inserted" → list of row indexes that were inserted</li>
+     *           <li>"updated" → list of row indexes that were updated</li>
+     *         </ul>
+     * @throws SQLException if any database error occurs (insertion, update, or rollback)
      */
     public Map<String, List<Integer>> importCustomerData(List<T002Dto> customers, Integer psnCd) throws SQLException {
         Map<String, List<Integer>> resultMap = new HashMap<>();
         List<Integer> insertedIndexes = new ArrayList<>();
         List<Integer> updatedIndexes = new ArrayList<>();
 
+        // Build SQL templates for insert, update, and check
         String insertSql = buildInsertSql();
         String updateSql = buildUpdateSql();
         String checkSql = buildCheckSql();
 
+        // Get DB connection
         try (Connection conn = DBUtils.getInstance().getConnection()) {
-            conn.setAutoCommit(false); // start transaction
+            conn.setAutoCommit(false); // start transaction manually
 
             try (PreparedStatement insertStmt = conn.prepareStatement(insertSql);
                  PreparedStatement updateStmt = conn.prepareStatement(updateSql);
                  PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
 
+                // Iterate over customers and decide insert/update
                 for (int i = 0; i < customers.size(); i++) {
                     T002Dto customer = customers.get(i);
-                    int sexValue = mapSex(customer.getSex());
+                    int sexValue = mapSex(customer.getSex()); // map sex from string to int (0/1)
 
                     if (customer.getCustomerID() == 0) {
-                        // Insert new customer
+                        // Case 1: Insert new customer
                         prepareInsertStatement(insertStmt, customer, sexValue, psnCd);
                         insertStmt.addBatch();
-                        insertedIndexes.add(i + 1);
+                        insertedIndexes.add(i + 1); // store line number (1-based index)
                     } else if (isUpdateNeeded(checkStmt, customer, sexValue)) {
-                        // Update existing customer if data changed
+                        // Case 2: Update existing customer only if data is different
                         prepareUpdateStatement(updateStmt, customer, sexValue, psnCd);
                         updateStmt.addBatch();
                         updatedIndexes.add(i + 1);
                     }
                 }
 
-                // Execute batch statements
+                // Execute batch for insert and update separately
                 executeBatch(insertStmt, insertedIndexes);
                 executeBatch(updateStmt, updatedIndexes);
 
-                conn.commit(); // commit transaction
+                conn.commit(); // commit all if success
 
-                // Put result into map
+                // Return result summary
                 resultMap.put("inserted", insertedIndexes);
                 resultMap.put("updated", updatedIndexes);
                 return resultMap;
 
             } catch (SQLException e) {
-                conn.rollback(); // rollback on error
+                conn.rollback(); // rollback all changes if any error
                 throw e;
             } finally {
-                conn.setAutoCommit(true); // reset autocommit
+                conn.setAutoCommit(true); // reset autocommit back to default
             }
         }
     }
+
 
     // ================= Helper Methods =================
 

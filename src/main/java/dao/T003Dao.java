@@ -39,10 +39,12 @@ public class T003Dao {
     }
 
     /**
-     * Retrieves a customer by ID if not marked as deleted.
+     * Retrieves a customer by ID from the database, only if the customer
+     * has not been marked as deleted (i.e., {@code DELETE_YMD IS NULL}).
      *
-     * @param customerId ID of the customer to retrieve
-     * @return a {@link T002Dto} object if found, otherwise {@code null}
+     * @param customerId the unique ID of the customer to retrieve
+     * @return a {@link T002Dto} populated with customer data if found,
+     *         otherwise {@code null}
      */
     public T002Dto getCustomerById(Integer customerId) {
         StringBuilder sql = new StringBuilder()
@@ -60,27 +62,38 @@ public class T003Dao {
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
 
+            // Bind customerId parameter
             stmt.setInt(1, customerId);
 
+            // Execute query
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return mapRow(rs); // Map ResultSet row to DTO
+                    // Map ResultSet row into DTO object
+                    return mapRow(rs);
                 }
             }
         } catch (SQLException e) {
+            // Log exception (can later replace with proper logging framework)
             e.printStackTrace();
         }
+
+        // Return null if no matching customer found or error occurred
         return null;
     }
 
     /**
-     * Inserts a new customer record.
+     * Inserts a new customer record into {@code MSTCUSTOMER}.
+     * <p>
+     * The method generates a new customer ID using {@code SEQ_CUSTOMER_ID}
+     * and sets audit fields (insert/update timestamp and person code).
+     * </p>
      *
-     * @param editForm customer data to insert
-     * @param psnCd    personal code of the user performing the operation
-     * @throws SQLException if insert fails
+     * @param editForm {@link T003Form} containing customer details
+     * @param psnCd    personal code of the logged-in user performing the insert
+     * @throws SQLException if the insert operation fails
      */
     public void insertCustomer(T003Form editForm, Integer psnCd) throws SQLException {
+        // Build INSERT statement with placeholders
         StringBuilder sql = new StringBuilder()
             .append("INSERT INTO ").append(TableConstants.TABLE_MSTCUSTOMER).append(" (")
             .append(TableConstants.CUST_CUSTOMER_ID).append(", ")
@@ -100,22 +113,35 @@ public class T003Dao {
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
 
+            // Set parameters 1–5: name, sex, birthday, email, address
             setCustomerParams(stmt, editForm);
-            stmt.setInt(6, psnCd); // INSERT_PSN_CD
-            stmt.setInt(7, psnCd); // UPDATE_PSN_CD
 
+            // Set parameter 6: INSERT_PSN_CD
+            stmt.setInt(6, psnCd);
+
+            // Set parameter 7: UPDATE_PSN_CD
+            stmt.setInt(7, psnCd);
+
+            // Execute insert
             stmt.executeUpdate();
         }
     }
 
+
     /**
-     * Updates an existing customer record.
+     * Updates an existing customer record in {@code MSTCUSTOMER}.
+     * <p>
+     * The method updates customer details (name, sex, birthday, email, address),
+     * resets {@code DELETE_YMD} to {@code NULL} (marking the record as active),
+     * and updates audit fields {@code UPDATE_YMD} and {@code UPDATE_PSN_CD}.
+     * </p>
      *
-     * @param editForm customer data to update
-     * @param psnCd    personal code of the user performing the operation
-     * @throws SQLException if update fails
+     * @param editForm {@link T003Form} containing updated customer data
+     * @param psnCd    personal code of the logged-in user performing the update
+     * @throws SQLException if the update operation fails
      */
     public void updateCustomer(T003Form editForm, Integer psnCd) throws SQLException {
+        // Build UPDATE SQL with placeholders
         StringBuilder sql = new StringBuilder()
             .append("UPDATE ").append(TableConstants.TABLE_MSTCUSTOMER).append(" SET ")
             .append(TableConstants.CUST_CUSTOMER_NAME).append(" = ?, ")
@@ -123,21 +149,31 @@ public class T003Dao {
             .append(TableConstants.CUST_BIRTHDAY).append(" = ?, ")
             .append(TableConstants.CUST_EMAIL).append(" = ?, ")
             .append(TableConstants.CUST_ADDRESS).append(" = ?, ")
+            // Reset DELETE_YMD → record is active again
             .append(TableConstants.CUST_DELETE_YMD).append(" = NULL, ")
+            // Update audit fields
             .append(TableConstants.CUST_UPDATE_YMD).append(" = CURRENT_TIMESTAMP, ")
             .append(TableConstants.CUST_UPDATE_PSN_CD).append(" = ? ")
+            // Restrict update by primary key
             .append("WHERE ").append(TableConstants.CUST_CUSTOMER_ID).append(" = ?");
 
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
 
+            // Set parameters 1–5: name, sex, birthday, email, address
             setCustomerParams(stmt, editForm);
-            stmt.setInt(6, psnCd); // UPDATE_PSN_CD
-            stmt.setInt(7, editForm.getCustomerId()); // WHERE clause
 
+            // Set parameter 6: UPDATE_PSN_CD (who updated this record)
+            stmt.setInt(6, psnCd);
+
+            // Set parameter 7: WHERE CUSTOMER_ID = ?
+            stmt.setInt(7, editForm.getCustomerId());
+
+            // Execute the UPDATE statement
             stmt.executeUpdate();
         }
     }
+
 
     /**
      * Maps the current row of a {@link ResultSet} to a {@link T002Dto}.

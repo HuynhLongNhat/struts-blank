@@ -103,28 +103,39 @@ public class T002Dao {
         }
         return whereClause;
     }
-
     /**
-     * Counts total records that match the search criteria.
+     * Counts the total number of customers that match the given WHERE clause and parameters.
+     * <p>
+     * Builds and executes a SQL {@code SELECT COUNT(*)} query dynamically
+     * using the provided conditions and parameters.
+     * </p>
      *
-     * @param whereClause SQL WHERE clause
-     * @param params      SQL parameters
-     * @return total matching records
-     * @throws SQLException if query execution fails
+     * @param whereClause The SQL WHERE clause (including leading "WHERE" if applicable).
+     * @param params      The list of parameter values to bind in the prepared statement.
+     * @return The total number of matching customers.
+     * @throws SQLException if a database access error occurs.
      */
     private int countCustomers(StringBuilder whereClause, List<Object> params) throws SQLException {
+        // Build COUNT query dynamically
         StringBuilder countSql = new StringBuilder()
-                .append("SELECT COUNT(*) FROM ").append(TableConstants.TABLE_MSTCUSTOMER)
+                .append("SELECT COUNT(*) FROM ")
+                .append(TableConstants.TABLE_MSTCUSTOMER)
                 .append(whereClause);
 
+        // Use try-with-resources to ensure connection, statement, and result set are closed
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement psCount = conn.prepareStatement(countSql.toString())) {
+
+            // Bind query parameters
             setParameters(psCount, params);
+
+            // Execute query and return the count if available
             try (ResultSet rs = psCount.executeQuery()) {
                 return rs.next() ? rs.getInt(1) : 0;
             }
         }
     }
+
 
     /**
      * Fetches customer records with pagination.
@@ -136,12 +147,28 @@ public class T002Dao {
      * @return list of customers
      * @throws SQLException if query execution fails
      */
+    /**
+     * Fetches a paginated list of customers based on dynamic search conditions.
+     * <p>
+     * Builds and executes a SQL query with filtering, ordering, and pagination.
+     * Supports mapping gender values ('0' → Male, '1' → Female) into readable text.
+     * </p>
+     *
+     * @param whereClause The SQL WHERE clause (including leading "WHERE" if applicable).
+     * @param params      The list of parameter values to bind in the prepared statement.
+     * @param offset      The starting row for pagination.
+     * @param limit       The maximum number of rows to retrieve.
+     * @return A list of {@link T002Dto} customers matching the search conditions.
+     * @throws SQLException if a database access error occurs.
+     */
     private List<T002Dto> fetchCustomers(StringBuilder whereClause, List<Object> params,
                                          int offset, int limit) throws SQLException {
+        // Build SELECT query with filtering, ordering, and pagination
         StringBuilder sql = new StringBuilder()
                 .append("SELECT ")
                 .append(TableConstants.CUST_CUSTOMER_ID).append(", ")
                 .append(TableConstants.CUST_CUSTOMER_NAME).append(", ")
+                // Map numeric gender values into readable strings
                 .append("CASE WHEN ").append(TableConstants.CUST_SEX).append(" = '0' THEN 'Male' ")
                 .append("WHEN ").append(TableConstants.CUST_SEX).append(" = '1' THEN 'Female' END AS ")
                 .append(TableConstants.CUST_SEX).append(", ")
@@ -151,17 +178,22 @@ public class T002Dao {
                 .append("FROM ").append(TableConstants.TABLE_MSTCUSTOMER)
                 .append(whereClause)
                 .append(" ORDER BY ").append(TableConstants.CUST_CUSTOMER_ID)
-                .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+                .append(" OFFSET ? ROWS FETCH NEXT ? ROWS ONLY"); // Pagination
 
-        // Clone params and add pagination values
+        // Clone parameter list and add pagination values
         List<Object> queryParams = new ArrayList<>(params);
         queryParams.add(offset);
         queryParams.add(limit);
 
         List<T002Dto> customers = new ArrayList<>();
+        // Try-with-resources ensures connection, statement, and result set are closed
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            // Bind all parameters, including filters and pagination
             setParameters(ps, queryParams);
+
+            // Execute query and map each row into a DTO
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     customers.add(mapRow(rs));
@@ -170,17 +202,20 @@ public class T002Dao {
         }
         return customers;
     }
-
     /**
-     * Marks customers as deleted by setting {@code DELETE_YMD} to current date.
+     * Soft deletes customers by marking them with the current date in {@code DELETE_YMD}.
+     * <p>
+     * Instead of removing records physically, this method updates the 
+     * {@code DELETE_YMD} column to the current date using {@code GETDATE()}.
+     * </p>
      *
-     * @param customerIds list of customer IDs to delete
-     * @throws SQLException if update operation fails
+     * @param customerIds list of customer IDs to mark as deleted
+     * @throws SQLException if the update operation fails
      */
     public void deleteCustomer(List<Integer> customerIds) throws SQLException {
         if (customerIds == null || customerIds.isEmpty()) return;
 
-        // Build dynamic SQL with placeholders for all IDs
+        // Build dynamic SQL with placeholders (?) for each customer ID
         StringBuilder sql = new StringBuilder()
                 .append("UPDATE ").append(TableConstants.TABLE_MSTCUSTOMER)
                 .append(" SET ").append(TableConstants.CUST_DELETE_YMD).append(" = GETDATE()")
@@ -190,10 +225,13 @@ public class T002Dao {
 
         try (Connection conn = DBUtils.getInstance().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            // Set all ID parameters
+            
+            // Assign values to each placeholder (customer ID)
             for (int i = 0; i < customerIds.size(); i++) {
                 ps.setInt(i + 1, customerIds.get(i));
             }
+
+            // Execute the update query
             ps.executeUpdate();
         }
     }
